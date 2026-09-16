@@ -114,7 +114,6 @@
                         </p>
                         <div class="flex gap-2">
                             <input type="text" id="q1Input" placeholder="정답 입력" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <button id="q1CheckBtn" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg transition-colors">확인</button>
                         </div>
                         <p id="feedback1" class="text-xs mt-2 hidden font-medium"></p>
                     </div>
@@ -212,7 +211,6 @@
         const answerBox = document.getElementById('answerBox');
         
         const q1Input = document.getElementById('q1Input');
-        const q1CheckBtn = document.getElementById('q1CheckBtn');
         const feedback1 = document.getElementById('feedback1');
         const quizBtns = document.querySelectorAll('.quiz-btn');
         
@@ -221,84 +219,37 @@
         const studentIdInput = document.getElementById('studentId');
         const studentNameInput = document.getElementById('studentName');
 
-        let q1Correct = false;
-        let q2Correct = false;
-        let q3Correct = false;
-        let q1Attempted = false;
-        let q2Attempted = false;
-        let q3Attempted = false;
+        let q2Selected = null;
+        let q3Selected = null;
 
-        // 문제 1 (주관식) 확인
-        q1CheckBtn.addEventListener('click', () => {
-            const answer = q1Input.value.trim();
-            if(!answer) return;
-            
-            q1Attempted = true;
-            if (answer === '물' || answer === '물질') {
-                q1Correct = true;
-                feedback1.textContent = "정답입니다! 🎉 (물)";
-                feedback1.className = "text-xs mt-2 text-green-600 font-bold block fade-in";
-                q1Input.classList.replace('border-gray-300', 'border-green-400');
-                q1Input.classList.add('bg-green-50');
-            } else {
-                q1Correct = false;
-                feedback1.textContent = "오답입니다. 파동을 전달해주는 수조 안의 물질이 무엇일까요? 🤔";
-                feedback1.className = "text-xs mt-2 text-red-500 font-bold block fade-in";
-                q1Input.classList.replace('border-gray-300', 'border-red-400');
-                q1Input.classList.add('bg-red-50');
-            }
-            checkAllCorrect();
-        });
-
-        // 문제 2, 3 (객관식) 확인
+        // 문제 2, 3 (객관식) 선택 로직 (제출 전까지는 선택만 됨)
         quizBtns.forEach(btn => {
             btn.addEventListener('click', function() {
+                if (submitBtn.disabled) return; // 제출 완료 후 변경 방지
+
                 const qNum = this.getAttribute('data-q');
                 const isCorrect = this.getAttribute('data-ans') === 'true';
-                const feedbackEl = document.getElementById('feedback' + qNum);
                 
-                if (qNum === '2') q2Attempted = true;
-                if (qNum === '3') q3Attempted = true;
-
-                // 버튼 색상 초기화
+                // 버튼 색상 초기화 (선택 상태 표시)
                 const siblings = document.querySelectorAll(`.quiz-btn[data-q="${qNum}"]`);
                 siblings.forEach(s => {
-                    s.classList.remove('bg-green-100', 'border-green-400', 'bg-red-100', 'border-red-400', 'text-green-800', 'text-red-800', 'font-bold');
+                    s.classList.remove('bg-blue-50', 'border-blue-400', 'text-blue-800', 'font-bold');
                     s.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
                 });
 
-                if (isCorrect) {
-                    this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
-                    this.classList.add('bg-green-100', 'border-green-400', 'text-green-800', 'font-bold');
-                    feedbackEl.textContent = "정답입니다! 🎉";
-                    feedbackEl.className = "text-xs mt-2 text-green-600 font-bold block fade-in";
-                    
-                    if (qNum === '2') q2Correct = true;
-                    if (qNum === '3') q3Correct = true;
-                } else {
-                    this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
-                    this.classList.add('bg-red-100', 'border-red-400', 'text-red-800', 'font-bold');
-                    feedbackEl.textContent = "오답입니다. 관찰 결과를 다시 확인해 보세요! 🤔";
-                    feedbackEl.className = "text-xs mt-2 text-red-500 font-bold block fade-in";
-                    
-                    if (qNum === '2') q2Correct = false;
-                    if (qNum === '3') q3Correct = false;
-                }
-                checkAllCorrect();
+                // 현재 클릭한 버튼 강조
+                this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+                this.classList.add('bg-blue-50', 'border-blue-400', 'text-blue-800', 'font-bold');
+
+                if (qNum === '2') q2Selected = isCorrect;
+                if (qNum === '3') q3Selected = isCorrect;
             });
         });
-
-        function checkAllCorrect() {
-            if (q1Correct && q2Correct && q3Correct) {
-                answerBox.classList.remove('hidden');
-            } else {
-                answerBox.classList.add('hidden');
-            }
-        }
 
         submitBtn.addEventListener('click', async () => {
             const studentId = studentIdInput.value.trim();
             const studentName = studentNameInput.value.trim();
+            const q1Answer = q1Input.value.trim();
 
             if (!studentId || !studentName) {
                 submitMsg.textContent = "⚠️ 학번과 이름을 모두 입력해주세요.";
@@ -306,14 +257,20 @@
                 return;
             }
 
-            if (!q1Attempted || !q2Attempted || !q3Attempted) {
-                submitMsg.textContent = "⚠️ 세 문제의 답을 모두 선택(또는 확인)한 후 제출해주세요.";
+            if (!q1Answer || q2Selected === null || q3Selected === null) {
+                submitMsg.textContent = "⚠️ 세 문제의 답을 모두 작성 및 선택한 후 제출해주세요.";
                 submitMsg.className = "text-xs text-center mt-2 text-red-500 font-bold block fade-in";
                 return;
             }
 
+            // 정답 판별
+            const q1Correct = (q1Answer === '물' || q1Answer === '물질');
+            const q2Correct = q2Selected;
+            const q3Correct = q3Selected;
+
             // 제출 중 상태
             submitBtn.disabled = true;
+            q1Input.disabled = true; // 입력창 비활성화
             submitBtn.innerHTML = "제출 중... <svg class='animate-spin h-4 w-4 ml-2' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4' fill='none'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg>";
             submitMsg.textContent = "";
 
@@ -334,21 +291,67 @@
                 });
 
                 if (response.ok) {
-                    submitMsg.textContent = "✅ 선생님께 성공적으로 제출되었습니다!";
-                    submitMsg.className = "text-sm text-center mt-2 text-indigo-600 font-bold block fade-in";
-                    submitBtn.innerHTML = "제출 완료";
+                    showFinalResults(q1Correct, q2Correct, q3Correct);
                 } else {
                     throw new Error('Network error');
                 }
             } catch (error) {
                 // 테스트 또는 CORS 에러 시 UI 임시 성공 처리 (실제 연동을 위해 에러 로그 확인 가능)
                 console.warn("API 연동 오류 (URL 미설정 등): ", error);
-                submitMsg.textContent = "✅ (테스트) 성공적으로 제출되었습니다! (실제 URL 변경 필요)";
-                submitMsg.className = "text-sm text-center mt-2 text-indigo-600 font-bold block fade-in";
-                submitBtn.innerHTML = "제출 완료";
-                submitBtn.disabled = false;
+                showFinalResults(q1Correct, q2Correct, q3Correct, true);
             }
         });
+
+        function showFinalResults(q1Correct, q2Correct, q3Correct, isTest = false) {
+            submitMsg.textContent = isTest ? "✅ (테스트) 제출되었습니다! (실제 URL 변경 필요)" : "✅ 선생님께 성공적으로 제출되었습니다!";
+            submitMsg.className = "text-sm text-center mt-2 text-indigo-600 font-bold block fade-in";
+            submitBtn.innerHTML = "제출 완료";
+
+            // 해설창 무조건 표시 (오답이어도 보여줌)
+            answerBox.classList.remove('hidden');
+
+            // 문제 1 채점 결과 표시
+            if (q1Correct) {
+                feedback1.textContent = "정답입니다! 🎉 (물)";
+                feedback1.className = "text-xs mt-2 text-green-600 font-bold block fade-in";
+                q1Input.classList.replace('border-gray-300', 'border-green-400');
+                q1Input.classList.add('bg-green-50');
+            } else {
+                feedback1.textContent = `오답입니다. (내가 쓴 답: ${q1Input.value} / 정답: 물)`;
+                feedback1.className = "text-xs mt-2 text-red-500 font-bold block fade-in";
+                q1Input.classList.replace('border-gray-300', 'border-red-400');
+                q1Input.classList.add('bg-red-50', 'text-red-600', 'line-through');
+            }
+
+            // 문제 2, 3 채점 결과 표시
+            [2, 3].forEach(qNum => {
+                const isCorrect = qNum === 2 ? q2Correct : q3Correct;
+                const feedbackEl = document.getElementById('feedback' + qNum);
+                const siblings = document.querySelectorAll(`.quiz-btn[data-q="${qNum}"]`);
+                
+                feedbackEl.textContent = isCorrect ? "정답입니다! 🎉" : "오답입니다.";
+                feedbackEl.className = `text-xs mt-2 font-bold block fade-in ${isCorrect ? 'text-green-600' : 'text-red-500'}`;
+
+                siblings.forEach(s => {
+                    s.disabled = true; // 비활성화
+                    const isThisAnsTrue = s.getAttribute('data-ans') === 'true';
+                    
+                    // 선택했던 답안의 색상 변경
+                    if (s.classList.contains('bg-blue-50')) {
+                        s.classList.remove('bg-blue-50', 'border-blue-400', 'text-blue-800');
+                        if (isThisAnsTrue) {
+                            s.classList.add('bg-green-100', 'border-green-400', 'text-green-800');
+                        } else {
+                            s.classList.add('bg-red-100', 'border-red-400', 'text-red-800');
+                        }
+                    } else if (isThisAnsTrue) {
+                        // 학생이 선택하지 않았더라도 진짜 정답인 버튼은 초록색 테두리로 표시해주기
+                        s.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+                        s.classList.add('border-green-400', 'text-green-600', 'bg-green-50');
+                    }
+                });
+            });
+        }
 
         function resizeCanvas() {
             const rect = wrapper.getBoundingClientRect();
