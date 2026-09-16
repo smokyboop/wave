@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>파동의 움직임 관찰하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+        /* 캔버스 컨테이너 비율 유지 */
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 66.66%; /* 3:2 Aspect Ratio로 수조 영역 확대 */
+            background-color: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            border: 2px solid #e5e7eb;
+        }
+        .canvas-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        /* 애니메이션 유틸리티 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex justify-center items-start">
+
+    <main class="w-full max-w-7xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col lg:flex-row">
+        
+        <!-- Left Area: Simulation Canvas -->
+        <section class="w-full lg:w-2/3 p-6 bg-slate-50 flex flex-col">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-blue-600 flex items-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    가상 실험실
+                </h2>
+                <button id="resetBtn" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors">
+                    초기화
+                </button>
+            </div>
+            
+            <div class="canvas-container cursor-crosshair group" id="canvasWrapper">
+                <canvas id="simulationCanvas"></canvas>
+                
+                <!-- Tooltip for interaction hint -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span class="bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm font-light mt-32">
+                        수면을 클릭하여 파동을 만들어보세요
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-center">
+                <button id="waveBtn" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-full shadow-md transform transition hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 text-lg">
+                    <span>🪵</span> 나무 막대로 수면 누르기
+                </button>
+            </div>
+            
+            <div class="mt-4 text-center text-sm text-gray-500">
+                수조의 단면을 관찰하는 모습입니다.
+            </div>
+        </section>
+
+        <!-- Right Area: Instructions and Explanations -->
+        <section class="w-full lg:w-1/3 p-6 md:p-8 border-l border-gray-100 flex flex-col justify-between">
+            <div>
+                <div class="inline-block px-3 py-1 bg-pink-100 text-pink-600 text-sm font-bold rounded-full mb-4">해보기</div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-2">파동의 움직임 관찰하기</h1>
+                
+                <div class="flex gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <input type="text" id="studentId" placeholder="학번 (예: 20101)" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="studentName" placeholder="이름 (예: 홍길동)" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="text-sm text-gray-500 mb-6 flex flex-wrap gap-2">
+                    <span class="font-semibold text-gray-700">준비물 |</span>
+                    <span>사각 수조,</span><span>물,</span><span>탁구공,</span><span>나무 막대</span>
+                </div>
+
+                <ol class="space-y-5 text-gray-700 list-decimal list-outside ml-5 mb-8">
+                    <li class="pl-2 leading-relaxed">사각 수조에 물을 2/3 정도 채우고 수면이 잔잔해진 다음 수면에 탁구공을 올려놓는다.</li>
+                    <li class="pl-2 leading-relaxed font-medium text-blue-900 bg-blue-50 p-2 rounded-md">
+                        나무 막대를 이용해 수면을 한 번 눌렀다 놓고, 수면의 변화를 관찰해 보자.
+                    </li>
+                </ol>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 relative">
+                    <div class="absolute -top-3 -left-3 w-8 h-8 bg-white border border-amber-200 rounded-full flex items-center justify-center shadow-sm text-amber-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-amber-900 font-bold mb-4 text-lg">실험 확인 문제</h3>
+                    
+                    <!-- Question 1 -->
+                    <div class="mb-5">
+                        <p class="text-gray-800 font-medium mb-2 text-sm text-balance">
+                            문제 1. 물결이 퍼져나갈 때 탁구공의 움직이는 방향을 선택해보자.
+                        </p>
+                        <div class="flex flex-col gap-2">
+                            <button class="quiz-btn w-full text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-q="1" data-ans="true">
+                                위 아래 방향으로 진동만 한다.
+                            </button>
+                            <button class="quiz-btn w-full text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-q="1" data-ans="false">
+                                옆으로 이동한다.
+                            </button>
+                        </div>
+                        <p id="feedback1" class="text-xs mt-2 hidden font-medium"></p>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="mb-2">
+                        <p class="text-gray-800 font-medium mb-2 text-sm text-balance">
+                            문제 2. 물결이 퍼져나갈 때 물 입자의 움직임을 선택해보자.
+                        </p>
+                        <div class="flex flex-col gap-2">
+                            <button class="quiz-btn w-full text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-q="2" data-ans="true">
+                                물 입자는 탁구공처럼 위아래로 진동한다.
+                            </button>
+                            <button class="quiz-btn w-full text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-q="2" data-ans="false">
+                                물 입자는 옆으로 이동한다.
+                            </button>
+                        </div>
+                        <p id="feedback2" class="text-xs mt-2 hidden font-medium"></p>
+                    </div>
+                    
+                    <div id="answerBox" class="hidden mt-5 p-4 bg-white border border-green-200 rounded-lg shadow-inner text-gray-700 text-sm leading-relaxed fade-in">
+                        <p class="font-bold text-green-600 mb-1">▶ 과학적 원리 해설</p>
+                        <p>파동이 진행할 때 <strong>매질(물)은 파동을 따라 이동하지 않고 제자리에서 진동만</strong> 합니다. 매질 위에 떠 있는 탁구공을 통해 매질이 이동하지 않음을 알 수 있습니다. 파동을 따라 이동하는 것은 <strong>에너지</strong>입니다.</p>
+                    </div>
+                    
+                    <div class="mt-6 border-t border-gray-200 pt-4">
+                        <button id="submitBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
+                            <span>결과 제출하기</span>
+                        </button>
+                        <p id="submitMsg" class="text-xs text-center mt-2 font-medium"></p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvasWrapper');
+
+        // Physics variables
+        const numPoints = 150; // Resolution of the water surface
+        let waterHeights = new Array(numPoints).fill(0);
+        let waterVelocities = new Array(numPoints).fill(0);
+        
+        // Wave properties
+        const tension = 0.012;      // 장력 감소 (파동이 부드럽고 커지도록 함)
+        const dampening = 0.0015;   // 감쇠력 대폭 감소 (파동이 훨씬 오래 지속되도록 함)
+        const spread = 0.28;        // 퍼짐 증가 (파동 형태가 뚜렷하게 관찰되도록 함)
+
+        // Layout variables
+        let width, height;
+        let baseWaterLevel;
+        let pointSpacing;
+
+        // Objects
+        const ball = {
+            gridX: Math.floor(numPoints * 0.65), // Position relative to grid points
+            radius: 12,
+            y: 0,
+            visualY: 0
+        };
+
+        const stick = {
+            gridX: Math.floor(numPoints * 0.3),
+            width: 15,
+            height: 60,
+            baseY: -30, // Relative to water surface
+            currentY: -30,
+            isHitting: false,
+            hitAnimationTime: 0
+        };
+
+        // UI Elements
+        const waveBtn = document.getElementById('waveBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const answerBox = document.getElementById('answerBox');
+        const quizBtns = document.querySelectorAll('.quiz-btn');
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const submitMsg = document.getElementById('submitMsg');
+        const studentIdInput = document.getElementById('studentId');
+        const studentNameInput = document.getElementById('studentName');
+
+        // Quiz Logic
+        let q1Correct = false;
+        let q2Correct = false;
+        let q1Attempted = false;
+        let q2Attempted = false;
+
+        quizBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const qNum = this.getAttribute('data-q');
+                const isCorrect = this.getAttribute('data-ans') === 'true';
+                const feedbackEl = document.getElementById('feedback' + qNum);
+                
+                if (qNum === '1') q1Attempted = true;
+                if (qNum === '2') q2Attempted = true;
+
+                // Reset colors for this question's buttons
+                const siblings = document.querySelectorAll(`.quiz-btn[data-q="${qNum}"]`);
+                siblings.forEach(s => {
+                    s.classList.remove('bg-green-100', 'border-green-400', 'bg-red-100', 'border-red-400', 'text-green-800', 'text-red-800', 'font-bold');
+                    s.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+                });
+
+                if (isCorrect) {
+                    this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+                    this.classList.add('bg-green-100', 'border-green-400', 'text-green-800', 'font-bold');
+                    feedbackEl.textContent = "정답입니다! 🎉";
+                    feedbackEl.className = "text-xs mt-2 text-green-600 font-bold block fade-in";
+                    
+                    if (qNum === '1') q1Correct = true;
+                    if (qNum === '2') q2Correct = true;
+                    
+                    // Show explanation if both are correct
+                    if (q1Correct && q2Correct) {
+                        answerBox.classList.remove('hidden');
+                    }
+                } else {
+                    this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+                    this.classList.add('bg-red-100', 'border-red-400', 'text-red-800', 'font-bold');
+                    feedbackEl.textContent = "오답입니다. 관찰 결과를 다시 확인해 보세요! 🤔";
+                    feedbackEl.className = "text-xs mt-2 text-red-500 font-bold block fade-in";
+                    
+                    if (qNum === '1') q1Correct = false;
+                    if (qNum === '2') q2Correct = false;
+                }
+            });
+        });
+
+        submitBtn.addEventListener('click', async () => {
+            const studentId = studentIdInput.value.trim();
+            const studentName = studentNameInput.value.trim();
+
+            if (!studentId || !studentName) {
+                submitMsg.textContent = "⚠️ 학번과 이름을 모두 입력해주세요.";
+                submitMsg.className = "text-xs text-center mt-2 text-red-500 font-bold block fade-in";
+                return;
+            }
+
+            if (!q1Attempted || !q2Attempted) {
+                submitMsg.textContent = "⚠️ 두 문제의 답을 모두 선택한 후 제출해주세요.";
+                submitMsg.className = "text-xs text-center mt-2 text-red-500 font-bold block fade-in";
+                return;
+            }
+
+            // 제출 중 로딩 상태 표시
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "제출 중... <svg class='animate-spin h-4 w-4 ml-2' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4' fill='none'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg>";
+            submitMsg.textContent = "";
+
+            // ★ 주의: 아래 URL을 본인의 구글 웹앱 URL로 반드시 교체해야 합니다!
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlIbglE36GKS8-xCPiGIhrVzLU9uZu6G71mDFsNJMNLUQMuCAZ2KVbDVUNx5ZTErc/exec'; 
+
+            try {
+                // 데이터를 form-urlencoded 방식으로 변환 (CORS 우회 및 Apps Script 통신에 유리함)
+                const formData = new URLSearchParams();
+                formData.append('studentId', studentId);
+                formData.append('studentName', studentName);
+                formData.append('q1Result', q1Correct ? '정답' : '오답');
+                formData.append('q2Result', q2Correct ? '정답' : '오답');
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    submitMsg.textContent = "✅ 선생님께 성공적으로 제출되었습니다!";
+                    submitMsg.className = "text-sm text-center mt-2 text-indigo-600 font-bold block fade-in";
+                    submitBtn.innerHTML = "제출 완료";
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            } catch (error) {
+                submitMsg.textContent = "❌ 제출에 실패했습니다. 다시 시도해주세요.";
+                submitMsg.className = "text-xs text-center mt-2 text-red-500 font-bold block fade-in";
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = "결과 제출하기";
+            }
+        });
+
+        function resizeCanvas() {
+            // Get actual CSS dimensions of the wrapper
+            const rect = wrapper.getBoundingClientRect();
+            // High DPI screen support for crisp rendering
+            const dpr = window.devicePixelRatio || 1;
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            
+            ctx.scale(dpr, dpr);
+            
+            width = rect.width;
+            height = rect.height;
+            
+            baseWaterLevel = height * 0.6; // Water fills bottom 40%
+            pointSpacing = width / (numPoints - 1);
+
+            // Scale object sizes relative to canvas width for responsiveness
+            ball.radius = width * 0.025;
+            stick.width = width * 0.03;
+            stick.height = height * 0.3;
+            stick.baseY = -stick.height * 0.6;
+            stick.currentY = stick.baseY;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function updatePhysics() {
+            // Spring force calculation for each column
+            for (let i = 0; i < numPoints; i++) {
+                // Force pulls back to rest position (0)
+                let force = -waterHeights[i] * tension;
+                waterVelocities[i] += force;
+            }
+
+            // Smoothing and neighbor interaction
+            let leftDeltas = new Array(numPoints).fill(0);
+            let rightDeltas = new Array(numPoints).fill(0);
+
+            // Do a few iterations for smoother wave propagation
+            for (let j = 0; j < 4; j++) {
+                for (let i = 0; i < numPoints; i++) {
+                    if (i > 0) {
+                        leftDeltas[i] = spread * (waterHeights[i] - waterHeights[i - 1]);
+                        waterVelocities[i - 1] += leftDeltas[i];
+                    }
+                    if (i < numPoints - 1) {
+                        rightDeltas[i] = spread * (waterHeights[i] - waterHeights[i + 1]);
+                        waterVelocities[i + 1] += rightDeltas[i];
+                    }
+                }
+                
+                for (let i = 0; i < numPoints; i++) {
+                    if (i > 0) waterHeights[i - 1] += leftDeltas[i];
+                    if (i < numPoints - 1) waterHeights[i + 1] += rightDeltas[i];
+                }
+            }
+
+            // Apply velocity, position update and damping
+            for (let i = 0; i < numPoints; i++) {
+                waterHeights[i] += waterVelocities[i];
+                waterVelocities[i] *= (1 - dampening); // Friction
+            }
+
+            // Update Ball position (Interpolate between points for smooth motion)
+            const exactX = ball.gridX;
+            const indexLeft = Math.floor(exactX);
+            const indexRight = Math.min(indexLeft + 1, numPoints - 1);
+            const fraction = exactX - indexLeft;
+            
+            // Linear interpolation of water height at ball's x position
+            const surfaceY = waterHeights[indexLeft] * (1 - fraction) + waterHeights[indexRight] * fraction;
+            ball.y = baseWaterLevel + surfaceY;
+            // Smooth visual Y (spring effect for the floating ball itself)
+            ball.visualY += (ball.y - ball.visualY) * 0.3;
+
+            // Handle Stick Hit Animation
+            if (stick.isHitting) {
+                stick.hitAnimationTime += 0.1;
+                // Simple sine wave bounce down and up
+                const plunge = Math.sin(stick.hitAnimationTime) * (stick.height * 0.4);
+                stick.currentY = stick.baseY + Math.max(0, plunge);
+
+                if (stick.hitAnimationTime > Math.PI) {
+                    stick.isHitting = false;
+                    stick.currentY = stick.baseY;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            // 1. Draw Tank Background (Glass effect)
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Tank borders
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(10, 10);
+            ctx.lineTo(10, height - 10);
+            ctx.lineTo(width - 10, height - 10);
+            ctx.lineTo(width - 10, 10);
+            ctx.stroke();
+
+            // 2. Draw Initial Water Level Reference Line
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(10, baseWaterLevel);
+            ctx.lineTo(width - 10, baseWaterLevel);
+            ctx.strokeStyle = 'rgba(100, 150, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset line dash
+            
+            // Text for reference line
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px Noto Sans KR';
+            ctx.textAlign = 'right';
+            ctx.fillText('처음 수면', width - 20, baseWaterLevel - 10);
+
+            // 3. Draw Water Surface
+            ctx.beginPath();
+            ctx.moveTo(10, height - 10); // Bottom left inside tank
+            
+            // Draw points along the surface
+            for (let i = 0; i < numPoints; i++) {
+                // Ensure water doesn't draw outside tank borders
+                let x = 10 + (i / (numPoints - 1)) * (width - 20);
+                let y = baseWaterLevel + waterHeights[i];
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.lineTo(width - 10, height - 10); // Bottom right inside tank
+            ctx.lineTo(10, height - 10);         // Close path
+            
+            // Fill water with gradient
+            const gradient = ctx.createLinearGradient(0, baseWaterLevel - 20, 0, height);
+            gradient.addColorStop(0, 'rgba(56, 189, 248, 0.8)'); // Light blue top
+            gradient.addColorStop(1, 'rgba(2, 132, 199, 0.9)');  // Darker bottom
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Draw surface line for emphasis
+            ctx.beginPath();
+            for (let i = 0; i < numPoints; i++) {
+                let x = 10 + (i / (numPoints - 1)) * (width - 20);
+                let y = baseWaterLevel + waterHeights[i];
+                if(i===0) ctx.moveTo(x,y);
+                else ctx.lineTo(x,y);
+            }
+            ctx.strokeStyle = '#0284c7'; // Darker blue line
+            ctx.lineWidth = 4; // (수정) 수면의 단면 선 두께를 두껍게 하여 출렁임이 시각적으로 더 돋보이게 함
+            ctx.stroke();
+
+            // 4. Draw Stick
+            const stickX = 10 + (stick.gridX / (numPoints - 1)) * (width - 20);
+            
+            // Wood stick
+            ctx.fillStyle = '#b45309'; // Brown
+            // Round corners for stick
+            const r = 4;
+            const sx = stickX - stick.width / 2;
+            const sy = baseWaterLevel + stick.currentY;
+            
+            ctx.beginPath();
+            ctx.moveTo(sx + r, sy);
+            ctx.lineTo(sx + stick.width - r, sy);
+            ctx.quadraticCurveTo(sx + stick.width, sy, sx + stick.width, sy + r);
+            ctx.lineTo(sx + stick.width, sy + stick.height - r);
+            ctx.quadraticCurveTo(sx + stick.width, sy + stick.height, sx + stick.width - r, sy + stick.height);
+            ctx.lineTo(sx + r, sy + stick.height);
+            ctx.quadraticCurveTo(sx, sy + stick.height, sx, sy + stick.height - r);
+            ctx.lineTo(sx, sy + r);
+            ctx.quadraticCurveTo(sx, sy, sx + r, sy);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Label
+            ctx.fillStyle = '#475569';
+            ctx.textAlign = 'center';
+            ctx.fillText('나무 막대', stickX, baseWaterLevel + stick.baseY - 10);
+
+            // 5. Draw Ping-Pong Ball
+            const ballRealX = 10 + (ball.gridX / (numPoints - 1)) * (width - 20);
+            
+            ctx.beginPath();
+            // Ball rests slightly in the water (offset y by radius * 0.8)
+            ctx.arc(ballRealX, ball.visualY - ball.radius * 0.8, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#fb923c'; // Orange ping pong color
+            ctx.fill();
+            
+            // Ball highlight (3D effect)
+            ctx.beginPath();
+            ctx.arc(ballRealX - ball.radius*0.3, ball.visualY - ball.radius*1.2, ball.radius*0.3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.fill();
+
+            // Label
+            ctx.fillStyle = '#475569';
+            ctx.fillText('탁구공', ballRealX, ball.visualY - ball.radius * 2 - 5);
+        }
+
+        function createDisturbance(xIndex, force) {
+            // Don't apply force near edges to prevent weird bouncing artifacts
+            if (xIndex > 10 && xIndex < numPoints - 10) {
+                // Apply force to a wider area around the stick
+                for(let i = -6; i <= 6; i++) { // 누르는 면적을 넓혀 더 큰 파동 생성
+                   waterHeights[xIndex + i] += force * (1 - Math.abs(i)/7);
+                }
+            }
+        }
+
+        function triggerWaveAction() {
+            if(!stick.isHitting) {
+                stick.isHitting = true;
+                stick.hitAnimationTime = 0;
+                // Create a strong downward force
+                // Adjust force based on canvas size to maintain consistent feel
+                const force = height * 0.25; // 막대가 누르는 힘을 크게 늘려 진폭을 대폭 증가
+                createDisturbance(stick.gridX, force);
+            }
+        }
+
+        // Event Listeners
+        waveBtn.addEventListener('click', triggerWaveAction);
+        
+        // Allow clicking on the canvas directly near the stick area to trigger
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            // Calculate scaled coordinates based on canvas internal size vs display size
+            const scaleX = canvas.width / rect.width;
+            const x = (e.clientX - rect.left) * scaleX;
+            
+            // Convert to grid index
+            const clickedGridX = Math.floor(((x / (window.devicePixelRatio||1)) - 10) / (width - 20) * (numPoints - 1));
+            
+            if(clickedGridX > 0 && clickedGridX < numPoints) {
+                 createDisturbance(clickedGridX, height * 0.18); // 직접 클릭 시에도 강한 파동 발생
+                 // If clicked near stick, animate stick
+                 if(Math.abs(clickedGridX - stick.gridX) < 15) {
+                     if(!stick.isHitting) {
+                         stick.isHitting = true;
+                         stick.hitAnimationTime = 0;
+                     }
+                 }
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            waterHeights.fill(0);
+            waterVelocities.fill(0);
+            stick.isHitting = false;
+            stick.currentY = stick.baseY;
+        });
+
+        /* 기존 showAnswerBtn 이벤트 리스너 제거됨 (퀴즈 자동 해설로 대체) */
+
+        // Main Animation Loop
+        function animate() {
+            updatePhysics();
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation
+        animate();
+
+    </script>
+</body>
+</html>
