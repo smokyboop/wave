@@ -131,7 +131,11 @@
                     <!-- Q1 -->
                     <div class="mb-5 pb-4 border-b border-amber-200/50">
                         <p class="text-gray-800 font-medium mb-2 text-sm">문제 1. 나무 막대가 만들어내는 파동을 전달하는 물질이 뭔지 써보자.</p>
-                        <input type="text" id="q1Input" placeholder="정답 입력" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="flex gap-2">
+                            <input type="text" id="q1Input" placeholder="정답 입력" class="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <button id="q1CheckBtn" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap shadow-sm">확인</button>
+                        </div>
+                        <p id="q1Feedback" class="hidden text-sm font-bold mt-2"></p>
                     </div>
 
                     <!-- Q2 -->
@@ -141,6 +145,7 @@
                             <button class="quiz-btn q2-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="true">위 아래 방향으로 진동만 한다.</button>
                             <button class="quiz-btn q2-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="false">옆으로 이동한다.</button>
                         </div>
+                        <p id="q2Feedback" class="hidden text-sm font-bold mt-2"></p>
                     </div>
 
                     <!-- Q3 -->
@@ -150,6 +155,7 @@
                             <button class="quiz-btn q3-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="true">물 입자는 탁구공처럼 위아래로 진동한다.</button>
                             <button class="quiz-btn q3-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="false">물 입자는 옆으로 이동한다.</button>
                         </div>
+                        <p id="q3Feedback" class="hidden text-sm font-bold mt-2"></p>
                     </div>
                 </div>
                 
@@ -204,6 +210,7 @@
                             <button class="quiz-btn q4-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="false">파동이 진행하는 방향을 따라서 이동한다.</button>
                             <button class="quiz-btn q4-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="true">제자리에서 진동한다.</button>
                         </div>
+                        <p id="q4Feedback" class="hidden text-sm font-bold mt-2"></p>
                     </div>
 
                     <!-- Q5 -->
@@ -213,6 +220,7 @@
                             <button class="quiz-btn q5-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="false">물 입자가 퍼져나감</button>
                             <button class="quiz-btn q5-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="true">진동(파동)이 퍼져나감</button>
                         </div>
+                        <p id="q5Feedback" class="hidden text-sm font-bold mt-2"></p>
                     </div>
                 </div>
                 
@@ -244,7 +252,6 @@
     <script>
         // === 선생님 설정 영역 ===
         // 구글 앱스 스크립트(Google Apps Script) 웹앱 URL을 아래 따옴표 안에 입력하세요.
-        // 예시: const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfyc.../exec";
         const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfycbwlIbglE36GKS8-xCPiGIhrVzLU9uZu6G71mDFsNJMNLUQMuCAZ2KVbDVUNx5ZTErc/exec";
         // ========================
 
@@ -506,6 +513,24 @@
             stick.currentY = stick.baseY;
         });
 
+        document.getElementById('q1CheckBtn').addEventListener('click', () => {
+            const val = document.getElementById('q1Input').value.trim();
+            const fb = document.getElementById('q1Feedback');
+            fb.classList.remove('hidden', 'text-red-500', 'text-green-600');
+            if (val === '') {
+                fb.textContent = "⚠️ 답을 입력해주세요.";
+                fb.classList.add('text-red-500');
+                return;
+            }
+            if (val.includes('물') || val.includes('물질')) {
+                fb.textContent = "✅ 정답입니다! 물결파의 매질은 '물'입니다.";
+                fb.classList.add('text-green-600');
+            } else {
+                fb.textContent = "❌ 오답입니다. 수조 안에 들어있는 물질이 무엇일까요?";
+                fb.classList.add('text-red-500');
+            }
+        });
+
         let ansQ2 = null;
         let ansQ3 = null;
 
@@ -518,6 +543,16 @@
                 this.classList.remove('bg-white', 'border-gray-300');
                 this.classList.add('bg-amber-100', 'border-amber-400', 'font-bold');
                 ansQ2 = this.getAttribute('data-ans') === 'true';
+
+                const fb = document.getElementById('q2Feedback');
+                fb.classList.remove('hidden', 'text-red-500', 'text-green-600');
+                if (ansQ2) {
+                    fb.textContent = "✅ 정답입니다! 탁구공은 제자리에서 위아래로만 진동합니다.";
+                    fb.classList.add('text-green-600');
+                } else {
+                    fb.textContent = "❌ 오답입니다. 탁구공이 옆으로 밀려나는지 다시 관찰해보세요.";
+                    fb.classList.add('text-red-500');
+                }
             });
         });
 
@@ -530,6 +565,16 @@
                 this.classList.remove('bg-white', 'border-gray-300');
                 this.classList.add('bg-amber-100', 'border-amber-400', 'font-bold');
                 ansQ3 = this.getAttribute('data-ans') === 'true';
+
+                const fb = document.getElementById('q3Feedback');
+                fb.classList.remove('hidden', 'text-red-500', 'text-green-600');
+                if (ansQ3) {
+                    fb.textContent = "✅ 정답입니다! 물 입자(매질)는 위아래로만 진동합니다.";
+                    fb.classList.add('text-green-600');
+                } else {
+                    fb.textContent = "❌ 오답입니다. 물 입자가 옆으로 이동하면 수조 한쪽으로 물이 쏠려야 합니다.";
+                    fb.classList.add('text-red-500');
+                }
             });
         });
 
@@ -564,7 +609,6 @@
                 switchTab(2); // 2단계 탭으로 자동 전환
             }, 1500);
         });
-
 
         const partCanvas = document.getElementById('partCanvas');
         const partCtx = partCanvas.getContext('2d');
@@ -732,6 +776,16 @@
                 this.classList.remove('bg-white', 'border-gray-300');
                 this.classList.add('bg-blue-100', 'border-blue-400', 'font-bold');
                 ansQ4 = this.getAttribute('data-ans') === 'true';
+
+                const fb = document.getElementById('q4Feedback');
+                fb.classList.remove('hidden', 'text-red-500', 'text-green-600');
+                if (ansQ4) {
+                    fb.textContent = "✅ 정답입니다! 물 입자는 파동을 따라가지 않고 제자리에서 진동합니다.";
+                    fb.classList.add('text-green-600');
+                } else {
+                    fb.textContent = "❌ 오답입니다. 노란색 오리가 가이드라인을 벗어나 옆으로 떠내려가는지 확인해보세요.";
+                    fb.classList.add('text-red-500');
+                }
             });
         });
 
@@ -744,6 +798,16 @@
                 this.classList.remove('bg-white', 'border-gray-300');
                 this.classList.add('bg-blue-100', 'border-blue-400', 'font-bold');
                 ansQ5 = this.getAttribute('data-ans') === 'true';
+
+                const fb = document.getElementById('q5Feedback');
+                fb.classList.remove('hidden', 'text-red-500', 'text-green-600');
+                if (ansQ5) {
+                    fb.textContent = "✅ 정답입니다! 매질은 진동만 하고, 실제로 퍼져나가는 것은 에너지(파동)입니다.";
+                    fb.classList.add('text-green-600');
+                } else {
+                    fb.textContent = "❌ 오답입니다. 문제 4번에서 물 입자는 제자리에서 진동한다고 배웠죠?";
+                    fb.classList.add('text-red-500');
+                }
             });
         });
 
@@ -752,12 +816,11 @@
             msgEl.classList.remove('hidden');
 
             if (ansQ4 === null || ansQ5 === null) {
-                msgEl.textContent = "⚠️ 4번, 5번 문제의 답을 선택해주세요.";
+                msgEl.textContent = "⚠️ 모든 문제의 답을 선택해주세요.";
                 msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
                 return;
             }
 
-            // 1단계 입력값 가져오기
             const id = document.getElementById('studentId').value.trim();
             const name = document.getElementById('studentName').value.trim();
             const q1Text = document.getElementById('q1Input').value.trim();
@@ -768,41 +831,48 @@
                 return;
             }
 
-            // 정답 여부 무관하게 핵심 정리 박스 표시
             document.getElementById('explanationBox').classList.remove('hidden');
             msgEl.textContent = "⏳ 결과를 제출 중입니다...";
             msgEl.className = "text-sm text-center mt-3 text-blue-600 font-bold block fade-in";
 
-            // 스프레드시트로 보낼 폼 데이터 준비
+            const isQ1Correct = q1Text.includes('물') || q1Text.includes('물질');
+            
+            const ans1Str = isQ1Correct ? `${q1Text} (정답)` : `${q1Text} (오답)`;
+            const ans2Str = ansQ2 ? "위아래 진동 (정답)" : "옆으로 이동 (오답)";
+            const ans3Str = ansQ3 ? "위아래 진동 (정답)" : "옆으로 이동 (오답)";
+            const ans4Str = ansQ4 ? "제자리 진동 (정답)" : "진행 방향 이동 (오답)";
+            const ans5Str = ansQ5 ? "진동(파동) 퍼져나감 (정답)" : "물 입자 퍼져나감 (오답)";
+
             const formData = new URLSearchParams();
             formData.append('studentId', id);
             formData.append('studentName', name);
-            formData.append('q1', q1Text);
-            formData.append('q2', ansQ2 ? "위아래 진동" : "옆으로 이동");
-            formData.append('q3', ansQ3 ? "위아래 진동" : "옆으로 이동");
-            formData.append('q4', ansQ4 ? "제자리 진동" : "진행 방향 이동");
-            formData.append('q5', ansQ5 ? "진동(파동) 퍼져나감" : "물 입자 퍼져나감");
+            
+            // Apps Script에서 소문자(q1)와 대문자(Q1) 중 어느 것을 파라미터로 받을지 몰라 둘 다 전송하여 "미제출" 오류 방지
+            formData.append('q1', ans1Str); formData.append('Q1', ans1Str);
+            formData.append('q2', ans2Str); formData.append('Q2', ans2Str);
+            formData.append('q3', ans3Str); formData.append('Q3', ans3Str);
+            formData.append('q4', ans4Str); formData.append('Q4', ans4Str);
+            formData.append('q5', ans5Str); formData.append('Q5', ans5Str);
 
-            // URL이 기본값인 경우 실제 전송 안함 (테스트 모드)
-            if (SPREADSHEET_URL === "여기에_구글_앱스_스크립트_웹앱_URL을_입력하세요") {
-                showMessage("제출 완료 (테스트)", "모든 문제 풀이가 완료되었습니다!\n\n(현재 코드에 선생님의 스프레드시트 URL이 설정되지 않아 실제 데이터 전송은 생략되었습니다.)", true);
-                msgEl.textContent = "✅ 최종 결과 제출이 완료되었습니다.";
+            // SPREADSHEET_URL 변수 확인 (상단에 정의되어 있어야 함)
+            if (typeof SPREADSHEET_URL === 'undefined' || SPREADSHEET_URL === "여기에_구글_앱스_스크립트_웹앱_URL을_입력하세요") {
+                showMessage("제출 완료 (테스트)", "모든 문제 풀이가 완료되었습니다!\n\n(현재 코드 상단에 선생님의 스프레드시트 URL이 설정되지 않아 실제 데이터 전송은 생략되었습니다.)", true);
+                msgEl.textContent = "✅ 최종 결과 제출이 완료되었습니다. (테스트 모드)";
                 msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
                 return;
             }
 
-            // 실제 스프레드시트로 전송 (CORS 에러 방지를 위해 no-cors 사용)
             fetch(SPREADSHEET_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: formData
             }).then(() => {
-                showMessage("🎉 최종 제출 완료!", "수고하셨습니다. 작성한 모든 결과가 선생님께 정상적으로 제출되었습니다.", true);
+                showMessage("🎉 최종 제출 완료!", "수고하셨습니다. 작성한 모든 결과가 정상적으로 제출되었습니다.", true);
                 msgEl.textContent = "✅ 제출이 완료되었습니다.";
                 msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
             }).catch((error) => {
                 console.error('Error:', error);
-                showMessage("제출 오류", "데이터 제출 중 문제가 발생했습니다. 선생님께 문의해주세요.", false);
+                showMessage("제출 오류", "데이터 제출 중 문제가 발생했습니다. 네트워크를 확인해주세요.", false);
                 msgEl.textContent = "❌ 제출에 실패했습니다.";
                 msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
             });
