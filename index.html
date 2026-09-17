@@ -3,25 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>방산중학교 과학 가상 실험실 - 파동</title>
+    <title>파동의 움직임 관찰 및 분석</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f3f4f6;
             color: #374151;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
+        
         .canvas-container {
             position: relative;
             width: 100%;
-            padding-bottom: 75%; 
+            padding-bottom: 75%; /* 4:3 비율 */
             background-color: white;
             border-radius: 0.75rem;
             overflow: hidden;
             box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
             border: 2px solid #e5e7eb;
         }
+        
         .canvas-container canvas {
             position: absolute;
             top: 0;
@@ -30,53 +36,71 @@
             height: 100%;
             display: block;
         }
+
         .fade-in {
-            animation: fadeIn 0.4s ease-in-out;
+            animation: fadeIn 0.5s ease-out forwards;
         }
+        
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .tab-btn.active {
-            border-bottom: 3px solid #3b82f6;
-            color: #2563eb;
-            font-weight: 700;
-            background-color: #f8fafc;
+
+        /* 탭 버튼 스타일 */
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+            border-bottom-color: transparent;
+            z-index: 10;
         }
-        .tab-btn {
-            border-bottom: 3px solid transparent;
+        .tab-inactive {
+            background-color: #e5e7eb;
+            color: #4b5563;
+            border-bottom-color: #d1d5db;
+            z-index: 1;
+        }
+        .tab-inactive:hover {
+            background-color: #d1d5db;
         }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 flex justify-center items-start">
-    <main class="w-full max-w-7xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col lg:flex-row">
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+    
+    <header class="w-full max-w-7xl mb-6 text-center">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">파동의 움직임 관찰 및 분석</h1>
+        <p class="text-gray-500 font-medium mb-6">파동이 전달될 때 물질(매질)은 어떻게 움직일까요?</p>
         
-        <!-- 왼쪽 영역: 시뮬레이션 캔버스 및 탭 -->
-        <section class="w-full lg:w-2/3 flex flex-col bg-slate-50">
-            <!-- 탭 메뉴 -->
-            <div class="flex border-b border-gray-200 bg-white">
-                <button id="tab1Btn" class="tab-btn active flex-1 py-4 text-center text-gray-500 hover:text-blue-600 font-medium transition-colors">
-                    1단계: 파동 관찰하기
-                </button>
-                <button id="tab2Btn" class="tab-btn flex-1 py-4 text-center text-gray-500 hover:text-blue-600 font-medium transition-colors">
-                    2단계: 입자 모형 분석하기
-                </button>
-            </div>
+        <div class="flex justify-center border-b-2 border-gray-300">
+            <button id="btnTab1" class="tab-active px-8 py-3 rounded-t-xl font-bold text-lg transition-all transform translate-y-[2px] border-2 border-b-0 border-blue-500 mr-2">
+                👀 1단계: 관찰하기
+            </button>
+            <button id="btnTab2" class="tab-inactive px-8 py-3 rounded-t-xl font-bold text-lg transition-all transform translate-y-[2px] border-2 border-b-0 border-gray-300">
+                🔬 2단계: 분석하기
+            </button>
+        </div>
+    </header>
 
-            <!-- 1단계: 관찰 탭 내용 -->
-            <div id="tab1Content" class="p-6 flex-1 flex flex-col fade-in">
+    <main class="w-full max-w-7xl relative bg-transparent">
+        
+        <!-- ========================================== -->
+        <!-- 탭 1: 관찰하기 (수조 시뮬레이션 + 퀴즈)      -->
+        <!-- ========================================== -->
+        <div id="contentTab1" class="w-full flex flex-col lg:flex-row bg-white rounded-2xl shadow-xl overflow-hidden fade-in block">
+            
+            <!-- 왼쪽: 시뮬레이션 -->
+            <section class="w-full lg:w-2/3 p-6 bg-slate-50 flex flex-col border-r border-gray-100">
                 <div class="mb-4 flex items-center justify-between">
                     <h2 class="text-xl font-bold text-blue-600 flex items-center gap-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        수조 속 물결파 관찰
+                        수조 시뮬레이션
                     </h2>
-                    <button id="resetBtn" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors">
+                    <button id="resetObsBtn" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors">
                         초기화
                     </button>
                 </div>
                 
-                <div class="canvas-container cursor-crosshair group" id="canvasWrapper1">
-                    <canvas id="simulationCanvas"></canvas>
+                <div class="canvas-container cursor-crosshair group" id="obsWrapper">
+                    <canvas id="obsCanvas"></canvas>
                     <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <span class="bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm font-light mt-32">
                             수면을 클릭하여 파동을 만들어보세요
@@ -85,175 +109,203 @@
                 </div>
 
                 <div class="mt-6 flex justify-center">
-                    <button id="waveBtn" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full shadow-md transition flex items-center gap-2 text-lg">
+                    <button id="waveBtn" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-full shadow-md transform transition hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 text-lg">
                         <span>🪵</span> 나무 막대로 수면 누르기
                     </button>
                 </div>
-            </div>
+            </section>
 
-            <!-- 2단계: 분석 탭 내용 (처음엔 숨김) -->
-            <div id="tab2Content" class="p-6 flex-1 flex flex-col hidden fade-in">
-                <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        물 입자의 움직임 분석 (입자 모형)
-                    </h2>
+            <!-- 오른쪽: 퀴즈 폼 -->
+            <section class="w-full lg:w-1/3 p-6 md:p-8 flex flex-col">
+                <div class="inline-block px-3 py-1 bg-pink-100 text-pink-600 text-sm font-bold rounded-full mb-4 w-fit">해보기</div>
+                <h3 class="text-2xl font-extrabold text-gray-800 mb-6">관찰 결과 정리</h3>
+                
+                <!-- 스프레드시트 URL 입력란 -->
+                <div class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <input type="url" id="sheetUrl" placeholder="https://script.google.com/macros/s/AKfycbwlIbglE36GKS8-xCPiGIhrVzLU9uZu6G71mDFsNJMNLUQMuCAZ2KVbDVUNx5ZTErc/exec" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- 학번 이름 입력란 -->
+                <div class="flex gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <input type="text" id="studentId" placeholder="학번 (예: 20101)" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="studentName" placeholder="이름 (예: 홍길동)" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 relative flex-grow">
+                    
+                    <!-- Q1 -->
+                    <div class="mb-5 pb-4 border-b border-amber-200/50">
+                        <p class="text-gray-800 font-medium mb-2 text-sm">문제 1. 나무 막대가 만들어내는 파동을 전달하는 물질이 뭔지 써보자.</p>
+                        <input type="text" id="q1Input" placeholder="정답 입력" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Q2 -->
+                    <div class="mb-5 pb-4 border-b border-amber-200/50">
+                        <p class="text-gray-800 font-medium mb-2 text-sm">문제 2. 물결이 퍼져나갈 때 탁구공의 움직이는 방향을 선택해보자.</p>
+                        <div class="flex flex-col gap-2">
+                            <button class="quiz-btn q2-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="true">위 아래 방향으로 진동만 한다.</button>
+                            <button class="quiz-btn q2-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="false">옆으로 이동한다.</button>
+                        </div>
+                    </div>
+
+                    <!-- Q3 -->
+                    <div class="mb-5">
+                        <p class="text-gray-800 font-medium mb-2 text-sm">문제 3. 물결이 퍼져나갈 때 물 입자의 움직임을 선택해보자.</p>
+                        <div class="flex flex-col gap-2">
+                            <button class="quiz-btn q3-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="true">물 입자는 탁구공처럼 위아래로 진동한다.</button>
+                            <button class="quiz-btn q3-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-amber-100 transition-colors text-sm text-gray-700" data-ans="false">물 입자는 옆으로 이동한다.</button>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="canvas-container" id="canvasWrapper2">
-                    <canvas id="particleCanvas"></canvas>
+                <div class="mt-auto border-t border-gray-200 pt-4">
+                    <button id="submitBtn1" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
+                        결과 제출하기
+                    </button>
+                    <p id="submitMsg1" class="text-sm text-center mt-3 font-bold hidden"></p>
                 </div>
+            </section>
+        </div>
 
-                <div class="mt-6 text-center text-sm text-gray-600 bg-indigo-50 p-4 rounded-lg">
-                    <p>파란색 점들은 <strong>물 입자(매질)</strong>를 나타내며, 노란색 오리는 수면에 떠 있는 <strong>물체(탁구공 역할)</strong>를 의미합니다.</p>
-                    <p class="mt-1">파동이 오른쪽으로 진행할 때, 각 입자들의 움직임 방향을 자세히 관찰해 보세요.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 오른쪽 영역: 설명 및 퀴즈 (스크롤 가능) -->
-        <section class="w-full lg:w-1/3 flex flex-col border-l border-gray-100 bg-white">
+        <!-- ========================================== -->
+        <!-- 탭 2: 분석하기 (입자 모형 시뮬레이션 + 심화 퀴즈) -->
+        <!-- ========================================== -->
+        <div id="contentTab2" class="w-full hidden fade-in flex-col lg:flex-row bg-white rounded-2xl shadow-xl overflow-hidden">
             
-            <!-- 학생 정보 입력 (상단 고정) -->
-            <div class="p-6 border-b border-gray-100 bg-gray-50">
-                <h1 class="text-2xl font-extrabold text-gray-800 mb-4">파동 탐구 보고서</h1>
-                <div class="flex gap-2">
-                    <input type="text" id="studentId" placeholder="학번 (예: 20101)" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500">
-                    <input type="text" id="studentName" placeholder="이름 (예: 홍길동)" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500">
+            <!-- 왼쪽: 입자 모형 시뮬레이션 -->
+            <section class="w-full lg:w-2/3 bg-slate-900 p-6 flex flex-col border-r border-slate-700">
+                <div class="mb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-blue-400 flex items-center gap-2">
+                            🔬 입자 모형 분석 (횡파)
+                        </h2>
+                    </div>
+                    <button id="startWaveBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-lg shadow-[0_0_10px_rgba(59,130,246,0.5)] transform transition active:scale-95 text-sm">
+                        ▶ 연속 파동 발생
+                    </button>
                 </div>
-            </div>
-
-            <!-- 문제 영역 (스크롤) -->
-            <div class="p-6 overflow-y-auto flex-1 pb-10">
-                <div class="inline-block px-3 py-1 bg-pink-100 text-pink-600 text-sm font-bold rounded-full mb-4">탐구 문제</div>
                 
-                <!-- 1단계 문제 그룹 -->
-                <div id="quizGroup1" class="fade-in">
-                    <h3 class="font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-2">관찰 내용 정리 (1단계)</h3>
-                    
-                    <div class="mb-5">
-                        <p class="text-sm font-medium mb-2">Q1. 나무 막대가 만들어내는 파동을 전달하는 물질이 뭔지 써보자.</p>
-                        <input type="text" id="q1Input" placeholder="정답 입력" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                    </div>
-
-                    <div class="mb-5">
-                        <p class="text-sm font-medium mb-2">Q2. 물결이 퍼져나갈 때 탁구공의 움직이는 방향은?</p>
-                        <div class="flex flex-col gap-2">
-                            <button class="quiz-btn q2-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="true">위 아래 방향으로 진동만 한다.</button>
-                            <button class="quiz-btn q2-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="false">옆으로 이동한다.</button>
-                        </div>
-                    </div>
-
-                    <div class="mb-5">
-                        <p class="text-sm font-medium mb-2">Q3. 물결이 퍼져나갈 때 물 입자의 움직임은 어떨까?</p>
-                        <div class="flex flex-col gap-2">
-                            <button class="quiz-btn q3-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="true">탁구공처럼 위아래로 진동한다.</button>
-                            <button class="quiz-btn q3-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="false">옆으로 이동한다.</button>
-                        </div>
-                    </div>
+                <div class="canvas-container bg-slate-800 border-2 border-slate-700" id="partWrapper">
+                    <canvas id="partCanvas"></canvas>
                 </div>
-
-                <!-- 2단계 문제 그룹 (처음엔 숨김) -->
-                <div id="quizGroup2" class="hidden fade-in">
-                    <h3 class="font-bold text-gray-800 mb-4 border-l-4 border-indigo-500 pl-2">입자 모형 분석 (2단계)</h3>
-                    
-                    <div class="mb-5">
-                        <p class="text-sm font-medium mb-2">Q4. 물이 전달하는 물결파에서 물 입자는...</p>
-                        <div class="flex flex-col gap-2">
-                            <button class="quiz-btn q4-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="false">파동이 진행하는 방향을 따라서 이동한다.</button>
-                            <button class="quiz-btn q4-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="true">제자리에서 진동한다.</button>
-                        </div>
-                    </div>
-
-                    <div class="mb-5">
-                        <p class="text-sm font-medium mb-2">Q5. 그렇다면 물결파에서 무엇이 이동한다고 해야 할까?</p>
-                        <div class="flex flex-col gap-2">
-                            <button class="quiz-btn q5-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="false">물 입자가 퍼져나감</button>
-                            <button class="quiz-btn q5-btn text-left px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" data-ans="true">진동(파동 에너지)이 퍼져나감</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- 버튼 및 제출 영역 (하단 고정) -->
-            <div class="p-6 border-t border-gray-200 bg-white">
-                <!-- 1단계에서 보이는 다음 단계 버튼 -->
-                <button id="nextTabBtn" class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center">
-                    2단계 분석하기로 넘어가기 ➔
-                </button>
                 
-                <!-- 2단계에서 보이는 제출 버튼 -->
-                <button id="submitBtn" class="hidden w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center">
-                    선생님께 결과 제출하기 ✔
-                </button>
-                <p id="submitMsg" class="text-xs text-center mt-3 font-medium"></p>
-            </div>
-        </section>
+                <div class="mt-4 flex items-center gap-4">
+                    <label class="text-sm font-bold text-slate-300 whitespace-nowrap">파동 속도 조절</label>
+                    <input type="range" id="speedSlider" min="0.02" max="0.15" step="0.01" value="0.06" class="w-full accent-blue-400">
+                </div>
+            </section>
+
+            <!-- 오른쪽: 분석 심화 퀴즈 -->
+            <section class="w-full lg:w-1/3 p-6 md:p-8 flex flex-col bg-slate-50">
+                <div class="inline-block px-3 py-1 bg-blue-100 text-blue-600 text-sm font-bold rounded-full mb-4 w-fit">심화 분석</div>
+                <h3 class="text-2xl font-extrabold text-gray-800 mb-6">개념 확인하기</h3>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6 relative flex-grow">
+                    
+                    <!-- Q4 -->
+                    <div class="mb-5 pb-4 border-b border-blue-200/50">
+                        <p class="text-gray-800 font-medium mb-2 text-sm">문제 4. 물이 전달하는 물결파에서 물 입자는 어떻게 움직일까?</p>
+                        <div class="flex flex-col gap-2">
+                            <button class="quiz-btn q4-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="false">파동이 진행하는 방향을 따라서 이동한다.</button>
+                            <button class="quiz-btn q4-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="true">제자리에서 진동한다.</button>
+                        </div>
+                    </div>
+
+                    <!-- Q5 -->
+                    <div class="mb-5">
+                        <p class="text-gray-800 font-medium mb-2 text-sm">문제 5. 그렇다면 물결파에서 무엇이 이동한다고 해야 할까?</p>
+                        <div class="flex flex-col gap-2">
+                            <button class="quiz-btn q5-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="false">물 입자가 퍼져나감</button>
+                            <button class="quiz-btn q5-btn text-left px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-100 transition-colors text-sm text-gray-700" data-ans="true">진동(파동)이 퍼져나감</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 2단계 설명창 (제출 후 표시) -->
+                <div id="explanationBox" class="hidden mb-4 p-4 bg-white border border-green-300 rounded-lg shadow-inner text-gray-700 text-sm leading-relaxed fade-in">
+                    <p class="font-bold text-green-600 mb-1">▶ 핵심 정리</p>
+                    <p>파동이 진행할 때 <strong>매질(물 입자)은 파동을 따라 이동하지 않고 제자리에서 진동만</strong> 합니다. 파동을 따라 퍼져나가는 것은 매질의 <strong>에너지(진동)</strong>입니다.</p>
+                </div>
+
+                <div class="mt-auto border-t border-gray-200 pt-4">
+                    <button id="submitBtn2" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
+                        결과 확인하기
+                    </button>
+                    <p id="submitMsg2" class="text-sm text-center mt-3 font-bold hidden"></p>
+                </div>
+            </section>
+        </div>
     </main>
 
+    <!-- 공통 알림창 UI -->
+    <div id="messageBox" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform duration-300" id="messageBoxContent">
+            <h3 class="text-xl font-bold text-slate-800 mb-2" id="msgTitle">알림</h3>
+            <p class="text-slate-600 mb-6 font-medium whitespace-pre-wrap" id="msgText">메시지 내용</p>
+            <button id="msgCloseBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">확인</button>
+        </div>
+    </div>
+
     <script>
-        // ============================================================================
-        // [중요] 여기에 Google Apps Script로 배포한 웹앱 URL을 붙여넣으세요!
-        // ============================================================================
-        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
-        // ============================================================================
+        const btnTab1 = document.getElementById('btnTab1');
+        const btnTab2 = document.getElementById('btnTab2');
+        const contentTab1 = document.getElementById('contentTab1');
+        const contentTab2 = document.getElementById('contentTab2');
+        let currentTab = 1;
 
-        /* ---------------- UI 및 탭/퀴즈 전환 로직 ---------------- */
-        const tab1Btn = document.getElementById('tab1Btn');
-        const tab2Btn = document.getElementById('tab2Btn');
-        const tab1Content = document.getElementById('tab1Content');
-        const tab2Content = document.getElementById('tab2Content');
+        function showMessage(title, text, isSuccess = false) {
+            const msgBox = document.getElementById('messageBox');
+            const msgContent = document.getElementById('messageBoxContent');
+            document.getElementById('msgTitle').textContent = title;
+            document.getElementById('msgTitle').className = `text-xl font-black mb-2 ${isSuccess ? 'text-green-600' : 'text-red-500'}`;
+            document.getElementById('msgText').textContent = text;
+            
+            msgBox.classList.remove('hidden');
+            setTimeout(() => msgContent.classList.remove('scale-95'), 10);
+        }
+
+        document.getElementById('msgCloseBtn').addEventListener('click', () => {
+            const msgBox = document.getElementById('messageBox');
+            const msgContent = document.getElementById('messageBoxContent');
+            msgContent.classList.add('scale-95');
+            setTimeout(() => msgBox.classList.add('hidden'), 200);
+        });
+
+        function switchTab(tabNum) {
+            currentTab = tabNum;
+            if (tabNum === 1) {
+                btnTab1.className = "tab-active px-8 py-3 rounded-t-xl font-bold text-lg transition-all transform translate-y-[2px] border-2 border-b-0 border-blue-500 mr-2";
+                btnTab2.className = "tab-inactive px-8 py-3 rounded-t-xl font-bold text-lg transition-all transform translate-y-[2px] border-2 border-b-0 border-gray-300";
+                
+                contentTab2.classList.add('hidden');
+                contentTab2.classList.remove('flex');
+                
+                contentTab1.classList.remove('hidden');
+                contentTab1.classList.add('flex');
+                
+                setTimeout(resizeObsCanvas, 50);
+            } else {
+                btnTab2.className = "tab-active px-8 py-3 rounded-t-xl font-bold text-lg transition-all transform translate-y-[2px] border-2 border-b-0 border-blue-500";
+                btnTab1.className = "tab-inactive px-8 py-3 rounded-t-xl font-bold text-lg transition-all transform translate-y-[2px] border-2 border-b-0 border-gray-300 mr-2";
+                
+                contentTab1.classList.add('hidden');
+                contentTab1.classList.remove('flex');
+                
+                contentTab2.classList.remove('hidden');
+                contentTab2.classList.add('flex');
+                
+                setTimeout(resizePartCanvas, 50);
+            }
+        }
+
+        btnTab1.addEventListener('click', () => switchTab(1));
+        btnTab2.addEventListener('click', () => switchTab(2));
+
+
+        const obsCanvas = document.getElementById('obsCanvas');
+        const obsCtx = obsCanvas.getContext('2d');
+        const obsWrapper = document.getElementById('obsWrapper');
         
-        const quizGroup1 = document.getElementById('quizGroup1');
-        const quizGroup2 = document.getElementById('quizGroup2');
-        const nextTabBtn = document.getElementById('nextTabBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const submitMsg = document.getElementById('submitMsg');
-
-        function switchToTab1() {
-            // 상단 탭 스타일 및 좌측 캔버스 전환
-            tab1Btn.classList.add('active');
-            tab2Btn.classList.remove('active');
-            tab1Content.classList.remove('hidden');
-            tab2Content.classList.add('hidden');
-            
-            // 우측 퀴즈 및 하단 버튼 전환
-            quizGroup1.classList.remove('hidden');
-            quizGroup2.classList.add('hidden');
-            nextTabBtn.classList.remove('hidden');
-            submitBtn.classList.add('hidden');
-            
-            submitMsg.textContent = ""; // 전환 시 메시지 초기화
-            resizeCanvas1();
-        }
-
-        function switchToTab2() {
-            // 상단 탭 스타일 및 좌측 캔버스 전환
-            tab2Btn.classList.add('active');
-            tab1Btn.classList.remove('active');
-            tab2Content.classList.remove('hidden');
-            tab1Content.classList.add('hidden');
-            
-            // 우측 퀴즈 및 하단 버튼 전환
-            quizGroup2.classList.remove('hidden');
-            quizGroup1.classList.add('hidden');
-            nextTabBtn.classList.add('hidden');
-            submitBtn.classList.remove('hidden');
-            
-            submitMsg.textContent = ""; // 전환 시 메시지 초기화
-            resizeCanvas2();
-        }
-
-        tab1Btn.addEventListener('click', switchToTab1);
-        tab2Btn.addEventListener('click', switchToTab2);
-        nextTabBtn.addEventListener('click', switchToTab2);
-
-        /* ---------------- [1단계] 관찰 탭 물리 엔진 ---------------- */
-        const canvas1 = document.getElementById('simulationCanvas');
-        const ctx1 = canvas1.getContext('2d');
-        const wrapper1 = document.getElementById('canvasWrapper1');
-
         const numPoints = 200; 
         let waterHeights = new Array(numPoints).fill(0);
         let waterVelocities = new Array(numPoints).fill(0);
@@ -261,32 +313,48 @@
         const tension = 0.005;      
         const dampening = 0.0005;   
         const spread = 0.35;        
-
-        let w1, h1, baseWaterLevel;
+        
+        let obsW, obsH, baseWaterLevel;
+        
         const ball = { gridX: Math.floor(numPoints * 0.65), radius: 14, y: 0, visualY: 0 };
-        const stick = { gridX: Math.floor(numPoints * 0.25), width: 18, height: 70, baseY: -35, currentY: -35, isHitting: false, hitAnimationTime: 0 };
+        const stick = {
+            gridX: Math.floor(numPoints * 0.25), width: 18, height: 70,
+            baseY: -35, currentY: -35, isHitting: false, hitAnimationTime: 0
+        };
 
-        function resizeCanvas1() {
-            if(tab1Content.classList.contains('hidden')) return;
-            const rect = wrapper1.getBoundingClientRect();
+        function resizeObsCanvas() {
+            if(currentTab !== 1) return;
+            const rect = obsWrapper.getBoundingClientRect();
+            if(rect.width === 0) return; 
+
             const dpr = window.devicePixelRatio || 1;
-            canvas1.width = rect.width * dpr;
-            canvas1.height = rect.height * dpr;
-            ctx1.scale(dpr, dpr);
-            w1 = rect.width; h1 = rect.height;
-            baseWaterLevel = h1 * 0.65; 
+            obsCanvas.width = rect.width * dpr;
+            obsCanvas.height = rect.height * dpr;
+            obsCtx.scale(dpr, dpr);
             
-            ball.radius = w1 * 0.028;
-            stick.width = w1 * 0.035;
-            stick.height = h1 * 0.35;
+            obsW = rect.width;
+            obsH = rect.height;
+            
+            baseWaterLevel = obsH * 0.65; 
+
+            ball.radius = obsW * 0.028;
+            stick.width = obsW * 0.035;
+            stick.height = obsH * 0.35;
             stick.baseY = -stick.height * 0.6;
             if(!stick.isHitting) stick.currentY = stick.baseY;
         }
-        window.addEventListener('resize', () => { resizeCanvas1(); resizeCanvas2(); });
-        resizeCanvas1();
 
-        function updatePhysics1() {
-            for (let i = 0; i < numPoints; i++) waterVelocities[i] += -waterHeights[i] * tension;
+        window.addEventListener('resize', () => {
+            if(currentTab === 1) resizeObsCanvas();
+            else resizePartCanvas();
+        });
+
+        function updateObsPhysics() {
+            for (let i = 0; i < numPoints; i++) {
+                let force = -waterHeights[i] * tension;
+                waterVelocities[i] += force;
+            }
+
             let leftDeltas = new Array(numPoints).fill(0);
             let rightDeltas = new Array(numPoints).fill(0);
 
@@ -300,233 +368,425 @@
                     if (i < numPoints - 1) waterHeights[i + 1] += rightDeltas[i];
                 }
             }
+
             for (let i = 0; i < numPoints; i++) {
                 waterHeights[i] += waterVelocities[i];
                 waterVelocities[i] *= (1 - dampening); 
             }
 
             const exactX = ball.gridX;
-            const idxLeft = Math.floor(exactX), idxRight = Math.min(idxLeft + 1, numPoints - 1);
-            const frac = exactX - idxLeft;
-            const surfaceY = waterHeights[idxLeft] * (1 - frac) + waterHeights[idxRight] * frac;
+            const indexLeft = Math.floor(exactX);
+            const indexRight = Math.min(indexLeft + 1, numPoints - 1);
+            const fraction = exactX - indexLeft;
             
+            const surfaceY = waterHeights[indexLeft] * (1 - fraction) + waterHeights[indexRight] * fraction;
             ball.y = baseWaterLevel + surfaceY;
             ball.visualY += (ball.y - ball.visualY) * 0.3;
 
             if (stick.isHitting) {
-                stick.hitAnimationTime += 0.08;
-                const plunge = Math.sin(stick.hitAnimationTime) * (stick.height * 0.6);
+                stick.hitAnimationTime += 0.08; 
+                const plunge = Math.sin(stick.hitAnimationTime) * (stick.height * 0.6); 
                 stick.currentY = stick.baseY + Math.max(0, plunge);
-                if (stick.hitAnimationTime > Math.PI) {
-                    stick.isHitting = false; stick.currentY = stick.baseY;
-                }
+                if (stick.hitAnimationTime > Math.PI) { stick.isHitting = false; stick.currentY = stick.baseY; }
             }
         }
 
-        function draw1() {
-            if(tab1Content.classList.contains('hidden')) return;
-            ctx1.clearRect(0, 0, w1, h1);
-            ctx1.fillStyle = '#f8fafc'; ctx1.fillRect(0, 0, w1, h1);
-            
-            ctx1.strokeStyle = '#94a3b8'; ctx1.lineWidth = 6;
-            ctx1.strokeRect(10, 10, w1-20, h1-20);
+        function drawObsCanvas() {
+            obsCtx.clearRect(0, 0, obsW, obsH);
 
-            ctx1.beginPath();
-            ctx1.moveTo(10, h1 - 10); 
-            for (let i = 0; i < numPoints; i++) {
-                ctx1.lineTo(10 + (i / (numPoints - 1)) * (w1 - 20), baseWaterLevel + waterHeights[i]);
-            }
-            ctx1.lineTo(w1 - 10, h1 - 10); ctx1.lineTo(10, h1 - 10);         
+            obsCtx.fillStyle = '#f8fafc';
+            obsCtx.fillRect(0, 0, obsW, obsH);
             
-            const grad = ctx1.createLinearGradient(0, baseWaterLevel - 50, 0, h1);
-            grad.addColorStop(0, 'rgba(56, 189, 248, 0.85)'); 
-            grad.addColorStop(1, 'rgba(2, 132, 199, 0.95)');  
-            ctx1.fillStyle = grad; ctx1.fill();
+            obsCtx.strokeStyle = '#94a3b8';
+            obsCtx.lineWidth = 6;
+            obsCtx.strokeRect(10, 10, obsW - 20, obsH - 20);
 
-            ctx1.beginPath();
+            obsCtx.beginPath();
+            obsCtx.setLineDash([5, 5]);
+            obsCtx.moveTo(10, baseWaterLevel);
+            obsCtx.lineTo(obsW - 10, baseWaterLevel);
+            obsCtx.strokeStyle = 'rgba(100, 150, 255, 0.4)';
+            obsCtx.lineWidth = 1.5;
+            obsCtx.stroke();
+            obsCtx.setLineDash([]); 
+
+            obsCtx.beginPath();
+            obsCtx.moveTo(10, obsH - 10); 
             for (let i = 0; i < numPoints; i++) {
-                let x = 10 + (i / (numPoints - 1)) * (w1 - 20);
+                let x = 10 + (i / (numPoints - 1)) * (obsW - 20);
                 let y = baseWaterLevel + waterHeights[i];
-                if(i===0) ctx1.moveTo(x,y); else ctx1.lineTo(x,y);
+                obsCtx.lineTo(x, y);
             }
-            ctx1.strokeStyle = '#0369a1'; ctx1.lineWidth = 5; ctx1.stroke();
-
-            const stickX = 10 + (stick.gridX / (numPoints - 1)) * (w1 - 20);
-            ctx1.fillStyle = '#b45309'; 
-            ctx1.fillRect(stickX - stick.width/2, baseWaterLevel + stick.currentY, stick.width, stick.height);
+            obsCtx.lineTo(obsW - 10, obsH - 10); 
             
-            const ballRealX = 10 + (ball.gridX / (numPoints - 1)) * (w1 - 20);
-            ctx1.beginPath();
-            ctx1.arc(ballRealX, ball.visualY - ball.radius * 0.8, ball.radius, 0, Math.PI * 2);
-            ctx1.fillStyle = '#fb923c'; ctx1.fill();
+            const gradient = obsCtx.createLinearGradient(0, baseWaterLevel - 50, 0, obsH);
+            gradient.addColorStop(0, 'rgba(56, 189, 248, 0.85)'); 
+            gradient.addColorStop(1, 'rgba(2, 132, 199, 0.95)');  
+            obsCtx.fillStyle = gradient;
+            obsCtx.fill();
+
+            obsCtx.beginPath();
+            for (let i = 0; i < numPoints; i++) {
+                let x = 10 + (i / (numPoints - 1)) * (obsW - 20);
+                let y = baseWaterLevel + waterHeights[i];
+                if(i===0) obsCtx.moveTo(x,y);
+                else obsCtx.lineTo(x,y);
+            }
+            obsCtx.strokeStyle = '#0369a1';
+            obsCtx.lineWidth = 5;
+            obsCtx.stroke();
+
+            const stickX = 10 + (stick.gridX / (numPoints - 1)) * (obsW - 20);
+            obsCtx.fillStyle = '#b45309'; 
+            const r = 5;
+            const sx = stickX - stick.width / 2;
+            const sy = baseWaterLevel + stick.currentY;
+            
+            obsCtx.beginPath();
+            obsCtx.moveTo(sx + r, sy);
+            obsCtx.lineTo(sx + stick.width - r, sy);
+            obsCtx.quadraticCurveTo(sx + stick.width, sy, sx + stick.width, sy + r);
+            obsCtx.lineTo(sx + stick.width, sy + stick.height - r);
+            obsCtx.quadraticCurveTo(sx + stick.width, sy + stick.height, sx + stick.width - r, sy + stick.height);
+            obsCtx.lineTo(sx + r, sy + stick.height);
+            obsCtx.quadraticCurveTo(sx, sy + stick.height, sx, sy + stick.height - r);
+            obsCtx.lineTo(sx, sy + r);
+            obsCtx.quadraticCurveTo(sx, sy, sx + r, sy);
+            obsCtx.fill();
+
+            const ballRealX = 10 + (ball.gridX / (numPoints - 1)) * (obsW - 20);
+            obsCtx.beginPath();
+            obsCtx.arc(ballRealX, ball.visualY - ball.radius * 0.8, ball.radius, 0, Math.PI * 2);
+            obsCtx.fillStyle = '#fb923c'; 
+            obsCtx.fill();
+            obsCtx.beginPath();
+            obsCtx.arc(ballRealX - ball.radius*0.3, ball.visualY - ball.radius*1.2, ball.radius*0.3, 0, Math.PI * 2);
+            obsCtx.fillStyle = 'rgba(255,255,255,0.5)';
+            obsCtx.fill();
+        }
+
+        function createDisturbance(xIndex, force) {
+            if (xIndex > 10 && xIndex < numPoints - 10) {
+                for(let i = -10; i <= 10; i++) { 
+                   waterHeights[xIndex + i] += force * (1 - Math.abs(i)/12);
+                }
+            }
         }
 
         document.getElementById('waveBtn').addEventListener('click', () => {
             if(!stick.isHitting) {
-                stick.isHitting = true; stick.hitAnimationTime = 0;
-                for(let i = -10; i <= 10; i++) { 
-                   waterHeights[stick.gridX + i] += h1 * 0.35 * (1 - Math.abs(i)/12);
-                }
+                stick.isHitting = true;
+                stick.hitAnimationTime = 0;
+                createDisturbance(stick.gridX, obsH * 0.35); 
             }
         });
-
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            waterHeights.fill(0); waterVelocities.fill(0);
-            stick.isHitting = false; stick.currentY = stick.baseY;
-        });
-
-        /* ---------------- [2단계] 입자 분석 탭 물리 엔진 ---------------- */
-        const canvas2 = document.getElementById('particleCanvas');
-        const ctx2 = canvas2.getContext('2d');
-        const wrapper2 = document.getElementById('canvasWrapper2');
         
-        let w2, h2;
-        let time2 = 0;
-
-        function resizeCanvas2() {
-            if(tab2Content.classList.contains('hidden')) return;
-            const rect = wrapper2.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            canvas2.width = rect.width * dpr;
-            canvas2.height = rect.height * dpr;
-            ctx2.scale(dpr, dpr);
-            w2 = rect.width; h2 = rect.height;
-        }
-
-        function draw2() {
-            if(tab2Content.classList.contains('hidden')) return;
-            ctx2.clearRect(0, 0, w2, h2);
-            time2 += 0.04; 
-
-            const amplitude = w2 * 0.04;
-            const wavelength = w2 * 0.35;
-            const k = (Math.PI * 2) / wavelength;
-            const omega = 1.5; 
-            const dotSpacing = w2 * 0.025;
+        obsCanvas.addEventListener('mousedown', (e) => {
+            const rect = obsCanvas.getBoundingClientRect();
+            const scaleX = obsCanvas.width / rect.width;
+            const x = (e.clientX - rect.left) * scaleX;
+            const clickedGridX = Math.floor(((x / (window.devicePixelRatio||1)) - 10) / (obsW - 20) * (numPoints - 1));
             
-            const rows = Math.floor(h2 / dotSpacing);
-            const cols = Math.floor(w2 / dotSpacing) + 2;
-            const startY = h2 * 0.25; 
-
-            ctx2.fillStyle = '#ef4444'; 
-            ctx2.font = "bold 20px Noto Sans KR";
-            ctx2.textAlign = 'center';
-            ctx2.fillText("파동의 진행 방향 ➔", w2/2, 40);
-
-            for(let r = 0; r < rows; r++) {
-                let currentAmp = amplitude * Math.exp(-r * 0.15); 
-                for(let c = 0; c < cols; c++) {
-                    let x = c * dotSpacing;
-                    let baseY = startY + r * dotSpacing;
-                    let y = baseY + currentAmp * Math.sin(k * x - omega * time2);
-
-                    ctx2.beginPath();
-                    ctx2.arc(x, y, dotSpacing*0.2, 0, Math.PI*2);
-                    ctx2.fillStyle = '#3b82f6';
-                    ctx2.fill();
-
-                    if(r === 0 && c === Math.floor(cols/2)) {
-                        ctx2.font = `${dotSpacing*1.5}px Arial`;
-                        ctx2.fillText("🦆", x, y - dotSpacing*0.5);
-                    }
-                }
+            if(clickedGridX > 0 && clickedGridX < numPoints) {
+                 createDisturbance(clickedGridX, obsH * 0.25); 
+                 if(Math.abs(clickedGridX - stick.gridX) < 20) {
+                     if(!stick.isHitting) {
+                         stick.isHitting = true;
+                         stick.hitAnimationTime = 0;
+                     }
+                 }
             }
-        }
+        });
 
-        function animate() {
-            updatePhysics1();
-            draw1();
-            draw2();
-            requestAnimationFrame(animate);
-        }
-        animate();
+        document.getElementById('resetObsBtn').addEventListener('click', () => {
+            waterHeights.fill(0);
+            waterVelocities.fill(0);
+            stick.isHitting = false;
+            stick.currentY = stick.baseY;
+        });
 
-        /* ---------------- 퀴즈 및 제출 로직 ---------------- */
-        const answers = { q2: null, q3: null, q4: null, q5: null };
-        
-        function handleQuizClick(groupClass, key) {
-            document.querySelectorAll(`.${groupClass}`).forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll(`.${groupClass}`).forEach(b => {
-                        b.classList.remove('bg-blue-50', 'border-blue-400', 'text-blue-800', 'font-bold');
-                        b.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
-                    });
-                    this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
-                    this.classList.add('bg-blue-50', 'border-blue-400', 'text-blue-800', 'font-bold');
-                    
-                    answers[key] = this.getAttribute('data-ans') === 'true';
+        let ansQ2 = null;
+        let ansQ3 = null;
+
+        document.querySelectorAll('.q2-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.q2-btn').forEach(b => {
+                    b.classList.remove('bg-amber-100', 'border-amber-400', 'font-bold');
+                    b.classList.add('bg-white', 'border-gray-300');
                 });
+                this.classList.remove('bg-white', 'border-gray-300');
+                this.classList.add('bg-amber-100', 'border-amber-400', 'font-bold');
+                ansQ2 = this.getAttribute('data-ans') === 'true';
             });
-        }
+        });
 
-        handleQuizClick('q2-btn', 'q2');
-        handleQuizClick('q3-btn', 'q3');
-        handleQuizClick('q4-btn', 'q4');
-        handleQuizClick('q5-btn', 'q5');
-
-        submitBtn.addEventListener('click', async () => {
-            const studentId = document.getElementById('studentId').value.trim();
-            const studentName = document.getElementById('studentName').value.trim();
-            const q1Answer = document.getElementById('q1Input').value.trim();
-
-            if (!studentId || !studentName) {
-                submitMsg.textContent = "⚠️ 학번과 이름을 모두 입력해주세요.";
-                submitMsg.className = "text-sm text-center mt-3 text-red-500 font-bold block";
-                return;
-            }
-
-            // 모든 문항 확인 예외 처리 (1단계 문항 누락 검사 포함)
-            if (!q1Answer || answers.q2 === null || answers.q3 === null || answers.q4 === null || answers.q5 === null) {
-                submitMsg.textContent = "⚠️ 1~5번 문제의 답을 모두 작성 및 선택해주세요. (1단계 탭의 문제도 확인하세요!)";
-                submitMsg.className = "text-sm text-center mt-3 text-red-500 font-bold block";
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = "제출 중... <svg class='animate-spin h-4 w-4 ml-2' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4' fill='none'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg>";
-            
-            const q1Correct = (q1Answer.includes('물') || q1Answer.includes('물질'));
-
-            try {
-                const formData = new URLSearchParams();
-                formData.append('studentId', studentId);
-                formData.append('studentName', studentName);
-                formData.append('q1Result', q1Correct ? '정답' : '오답');
-                formData.append('q2Result', answers.q2 ? '정답' : '오답');
-                formData.append('q3Result', answers.q3 ? '정답' : '오답');
-                formData.append('q4Result', answers.q4 ? '정답' : '오답');
-                formData.append('q5Result', answers.q5 ? '정답' : '오답');
-
-                if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbwlIbglE36GKS8-xCPiGIhrVzLU9uZu6G71mDFsNJMNLUQMuCAZ2KVbDVUNx5ZTErc/exec') {
-                    throw new Error("URL_NOT_SET");
-                }
-
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData,
+        document.querySelectorAll('.q3-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.q3-btn').forEach(b => {
+                    b.classList.remove('bg-amber-100', 'border-amber-400', 'font-bold');
+                    b.classList.add('bg-white', 'border-gray-300');
                 });
+                this.classList.remove('bg-white', 'border-gray-300');
+                this.classList.add('bg-amber-100', 'border-amber-400', 'font-bold');
+                ansQ3 = this.getAttribute('data-ans') === 'true';
+            });
+        });
 
-                if (response.ok) {
-                    submitMsg.textContent = "✅ 선생님께 성공적으로 제출되었습니다!";
-                    submitMsg.className = "text-sm text-center mt-3 text-green-600 font-bold block";
-                    submitBtn.innerHTML = "제출 완료";
-                } else {
-                    throw new Error('NETWORK_ERROR');
-                }
-            } catch (error) {
-                if(error.message === "URL_NOT_SET") {
-                    submitMsg.textContent = "✅ (테스트 완료) 데이터를 수집하려면 실제 SCRIPT_URL을 입력하세요.";
-                    submitMsg.className = "text-sm text-center mt-3 text-indigo-600 font-bold block";
-                    submitBtn.innerHTML = "제출 완료 (테스트)";
-                    submitBtn.disabled = false;
-                } else {
-                    submitMsg.textContent = "⚠️ 제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-                    submitMsg.className = "text-sm text-center mt-3 text-red-500 font-bold block";
-                    submitBtn.innerHTML = "선생님께 결과 제출하기 ✔";
-                    submitBtn.disabled = false;
-                }
+        document.getElementById('submitBtn1').addEventListener('click', () => {
+            const q1Text = document.getElementById('q1Input').value.trim();
+            const msgEl = document.getElementById('submitMsg1');
+            msgEl.classList.remove('hidden');
+
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+
+            if (!id || !name) {
+                msgEl.textContent = "⚠️ 학번과 이름을 입력해주세요.";
+                msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
+                return;
+            }
+
+            if (!q1Text || ansQ2 === null || ansQ3 === null) {
+                msgEl.textContent = "⚠️ 모든 문제의 답을 작성하고 선택해주세요.";
+                msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
+                return;
+            }
+
+            const isQ1Correct = q1Text.includes('물') || q1Text.includes('물질');
+            
+            if (isQ1Correct && ansQ2 && ansQ3) {
+                showMessage("🎉 1단계 모두 정답입니다!", "훌륭합니다! 파동이 진행할 때 매질(물 입자)과 탁구공은 파동을 따라 이동하지 않고 제자리에서 위아래로 진동만 한다는 사실을 정확히 이해하셨네요.\n\n상단의 [🔬 2단계: 분석하기] 탭으로 이동하여 입자 모형과 심화 문제를 풀어보세요!", true);
+                msgEl.textContent = "✅ 제출 완료 및 정답 처리되었습니다.";
+                msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
+                
+                btnTab2.classList.add('animate-pulse', 'border-blue-500', 'bg-blue-100');
+                setTimeout(() => btnTab2.classList.remove('animate-pulse', 'bg-blue-100'), 3000);
+            } else {
+                showMessage("🤔 다시 한번 생각해보세요", "틀린 문제가 있습니다.\n\n[힌트]\n- 물결을 전달해주는 것은 무엇일까요?\n- 탁구공은 옆으로 떠내려갔나요, 아니면 위아래로 출렁이기만 했나요?", false);
+                msgEl.textContent = "❌ 틀린 문제가 있습니다. 다시 시도해주세요.";
+                msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
             }
         });
+
+
+        const partCanvas = document.getElementById('partCanvas');
+        const partCtx = partCanvas.getContext('2d');
+        const partWrapper = document.getElementById('partWrapper');
+        const speedSlider = document.getElementById('speedSlider');
+        
+        let partW, partH;
+        let isWaveActive = false;
+        let waveTime = 0;
+        
+        const cols = 40;
+        const rows = 12;
+        let spacingX, spacingY;
+        let startX, startY;
+        
+        const duckCol = Math.floor(cols * 0.5);
+        const duckRow = 0;
+
+        function resizePartCanvas() {
+            if(currentTab !== 2) return;
+            const rect = partWrapper.getBoundingClientRect();
+            if(rect.width === 0) return;
+
+            const dpr = window.devicePixelRatio || 1;
+            partCanvas.width = rect.width * dpr;
+            partCanvas.height = rect.height * dpr;
+            partCtx.scale(dpr, dpr);
+            
+            partW = rect.width;
+            partH = rect.height;
+            
+            startX = partW * 0.05;
+            startY = partH * 0.35; // 화살표 영역을 위해 시작 높이 낮춤
+            
+            spacingX = (partW * 0.9) / (cols - 1);
+            spacingY = (partH * 0.6) / (rows - 1);
+        }
+
+        document.getElementById('startWaveBtn').addEventListener('click', function() {
+            isWaveActive = !isWaveActive;
+            if (isWaveActive) {
+                this.innerHTML = `⏸ 일시정지`;
+                this.className = "px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white font-bold rounded-lg shadow-md transform transition active:scale-95 text-sm";
+            } else {
+                this.innerHTML = `▶ 연속 파동 발생`;
+                this.className = "px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-lg shadow-[0_0_10px_rgba(59,130,246,0.5)] transform transition active:scale-95 text-sm";
+            }
+        });
+
+        function drawDuck(ctx, x, y, scale = 1) {
+            ctx.save();
+            ctx.translate(x, y - 10*scale);
+            ctx.scale(scale, scale);
+            
+            ctx.fillStyle = "#FCD34D"; 
+            ctx.beginPath(); ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(10, -10, 8, 0, Math.PI * 2); ctx.fill();
+            
+            ctx.fillStyle = "#1E293B"; 
+            ctx.beginPath(); ctx.arc(12, -12, 1.5, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = "#F97316"; 
+            ctx.beginPath(); ctx.moveTo(16, -10); ctx.lineTo(22, -8); ctx.lineTo(16, -6); ctx.fill();
+
+            ctx.fillStyle = "#FBBF24"; 
+            ctx.beginPath(); ctx.ellipse(-2, 2, 8, 4, -0.2, 0, Math.PI*2); ctx.fill();
+            
+            ctx.restore();
+        }
+
+        function drawDirectionArrow(ctx) {
+            const arrowY = partH * 0.12;
+            const startArrowX = partW * 0.25;
+            const endArrowX = partW * 0.75;
+            
+            // Text
+            ctx.font = "bold 20px 'Noto Sans KR'";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#ef4444"; // red-500
+            ctx.fillText("▶ 파동(에너지)의 진행 방향", partW * 0.5, arrowY - 15);
+
+            // Arrow line
+            ctx.beginPath();
+            ctx.moveTo(startArrowX, arrowY);
+            ctx.lineTo(endArrowX, arrowY);
+            ctx.strokeStyle = "#ef4444";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Arrow head
+            ctx.beginPath();
+            ctx.moveTo(endArrowX + 5, arrowY);
+            ctx.lineTo(endArrowX - 15, arrowY - 12);
+            ctx.lineTo(endArrowX - 15, arrowY + 12);
+            ctx.fillStyle = "#ef4444";
+            ctx.fill();
+        }
+
+        function drawPartCanvas() {
+            partCtx.clearRect(0, 0, partW, partH);
+            
+            if (isWaveActive) {
+                const speed = parseFloat(speedSlider.value);
+                waveTime += speed;
+            }
+
+            drawDirectionArrow(partCtx);
+
+            const k = 0.4; 
+            const maxAmp = Math.min(partH * 0.12, 40); 
+            let duckX = 0, duckY = 0;
+
+            for (let r = 0; r < rows; r++) {
+                const amp = maxAmp * Math.exp(-r * 0.2); 
+                const defaultY = startY + r * spacingY;
+                
+                for (let c = 0; c < cols; c++) {
+                    const defaultX = startX + c * spacingX;
+                    
+                    // 입자의 위치: X축은 고정! Y축으로만 진동
+                    const phase = k * c - waveTime * 2; 
+                    const y = defaultY + amp * Math.sin(phase);
+                    const x = defaultX; 
+                    
+                    if (r === duckRow && c === duckCol) {
+                        duckX = x; duckY = y;
+                        // 오리의 좌우 고정을 증명하는 세로선 (가이드라인)
+                        partCtx.beginPath();
+                        partCtx.setLineDash([5, 5]);
+                        partCtx.moveTo(x, startY - maxAmp * 1.2);
+                        partCtx.lineTo(x, partH - 20);
+                        partCtx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                        partCtx.lineWidth = 2;
+                        partCtx.stroke();
+                        partCtx.setLineDash([]);
+                    }
+
+                    partCtx.beginPath();
+                    const radius = (r === duckRow && c === duckCol) ? 0 : (r===0 ? 4 : 3);
+                    partCtx.arc(x, y, radius, 0, Math.PI * 2);
+                    
+                    if (r === 0) {
+                        partCtx.fillStyle = '#60a5fa'; // 최상단
+                    } else {
+                        const alpha = Math.max(0.15, 1 - r/rows);
+                        partCtx.fillStyle = `rgba(59, 130, 246, ${alpha})`; 
+                    }
+                    partCtx.fill();
+                }
+            }
+            
+            // 오리 렌더링
+            if(duckX > 0) drawDuck(partCtx, duckX, duckY, Math.max(0.7, partW/900));
+        }
+
+        let ansQ4 = null;
+        let ansQ5 = null;
+
+        document.querySelectorAll('.q4-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.q4-btn').forEach(b => {
+                    b.classList.remove('bg-blue-100', 'border-blue-400', 'font-bold');
+                    b.classList.add('bg-white', 'border-gray-300');
+                });
+                this.classList.remove('bg-white', 'border-gray-300');
+                this.classList.add('bg-blue-100', 'border-blue-400', 'font-bold');
+                ansQ4 = this.getAttribute('data-ans') === 'true';
+            });
+        });
+
+        document.querySelectorAll('.q5-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.q5-btn').forEach(b => {
+                    b.classList.remove('bg-blue-100', 'border-blue-400', 'font-bold');
+                    b.classList.add('bg-white', 'border-gray-300');
+                });
+                this.classList.remove('bg-white', 'border-gray-300');
+                this.classList.add('bg-blue-100', 'border-blue-400', 'font-bold');
+                ansQ5 = this.getAttribute('data-ans') === 'true';
+            });
+        });
+
+        document.getElementById('submitBtn2').addEventListener('click', () => {
+            const msgEl = document.getElementById('submitMsg2');
+            msgEl.classList.remove('hidden');
+
+            if (ansQ4 === null || ansQ5 === null) {
+                msgEl.textContent = "⚠️ 모든 문제의 답을 선택해주세요.";
+                msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
+                return;
+            }
+
+            if (ansQ4 && ansQ5) {
+                document.getElementById('explanationBox').classList.remove('hidden');
+                showMessage("🎉 완벽하게 이해하셨네요!", "정답입니다!\n파동이 진행할 때 매질(물)은 제자리에서 진동만 하고, 실제로 전달되는 것은 '에너지(진동)'입니다.", true);
+                msgEl.textContent = "✅ 제출 완료 및 정답 처리되었습니다.";
+                msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
+            } else {
+                showMessage("🤔 다시 확인해보세요!", "[힌트]\n- 2단계 시뮬레이션에서 노란색 오리가 오른쪽으로 떠내려가나요?\n- 화살표 방향(파동)으로 진행하는 것은 물 입자일까요, 진동하는 에너지일까요?", false);
+                msgEl.textContent = "❌ 틀린 문제가 있습니다. 다시 시도해주세요.";
+                msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
+            }
+        });
+
+        function animateLoop() {
+            if (currentTab === 1) {
+                updateObsPhysics();
+                drawObsCanvas();
+            } else if (currentTab === 2) {
+                drawPartCanvas();
+            }
+            requestAnimationFrame(animateLoop);
+        }
+
+        window.onload = function() {
+            resizeObsCanvas();
+            resizePartCanvas();
+            animateLoop();
+        };
     </script>
 </body>
 </html>
