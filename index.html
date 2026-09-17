@@ -31,16 +31,17 @@
             display: block;
         }
         .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.4s ease-in-out;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .tab-btn.active {
             border-bottom: 3px solid #3b82f6;
             color: #2563eb;
             font-weight: 700;
+            background-color: #f8fafc;
         }
         .tab-btn {
             border-bottom: 3px solid transparent;
@@ -123,17 +124,16 @@
             </div>
 
             <!-- 문제 영역 (스크롤) -->
-            <div class="p-6 overflow-y-auto flex-1 pb-32">
+            <div class="p-6 overflow-y-auto flex-1 pb-10">
                 <div class="inline-block px-3 py-1 bg-pink-100 text-pink-600 text-sm font-bold rounded-full mb-4">탐구 문제</div>
                 
-                <!-- 문제 1~3 (1단계 관련) -->
-                <div class="mb-8">
+                <!-- 1단계 문제 그룹 -->
+                <div id="quizGroup1" class="fade-in">
                     <h3 class="font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-2">관찰 내용 정리 (1단계)</h3>
                     
                     <div class="mb-5">
                         <p class="text-sm font-medium mb-2">Q1. 나무 막대가 만들어내는 파동을 전달하는 물질이 뭔지 써보자.</p>
                         <input type="text" id="q1Input" placeholder="정답 입력" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        <p id="feedback1" class="text-xs mt-1 hidden font-bold"></p>
                     </div>
 
                     <div class="mb-5">
@@ -153,8 +153,8 @@
                     </div>
                 </div>
 
-                <!-- 문제 4~5 (2단계 관련) -->
-                <div>
+                <!-- 2단계 문제 그룹 (처음엔 숨김) -->
+                <div id="quizGroup2" class="hidden fade-in">
                     <h3 class="font-bold text-gray-800 mb-4 border-l-4 border-indigo-500 pl-2">입자 모형 분석 (2단계)</h3>
                     
                     <div class="mb-5">
@@ -176,12 +176,18 @@
 
             </div>
 
-            <!-- 제출 버튼 (하단 고정) -->
+            <!-- 버튼 및 제출 영역 (하단 고정) -->
             <div class="p-6 border-t border-gray-200 bg-white">
-                <button id="submitBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center">
-                    선생님께 결과 제출하기
+                <!-- 1단계에서 보이는 다음 단계 버튼 -->
+                <button id="nextTabBtn" class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center">
+                    2단계 분석하기로 넘어가기 ➔
                 </button>
-                <p id="submitMsg" class="text-xs text-center mt-2 font-medium"></p>
+                
+                <!-- 2단계에서 보이는 제출 버튼 -->
+                <button id="submitBtn" class="hidden w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center">
+                    선생님께 결과 제출하기 ✔
+                </button>
+                <p id="submitMsg" class="text-xs text-center mt-3 font-medium"></p>
             </div>
         </section>
     </main>
@@ -193,29 +199,57 @@
         const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
         // ============================================================================
 
-        /* ---------------- UI 및 탭 전환 로직 ---------------- */
+        /* ---------------- UI 및 탭/퀴즈 전환 로직 ---------------- */
         const tab1Btn = document.getElementById('tab1Btn');
         const tab2Btn = document.getElementById('tab2Btn');
         const tab1Content = document.getElementById('tab1Content');
         const tab2Content = document.getElementById('tab2Content');
+        
+        const quizGroup1 = document.getElementById('quizGroup1');
+        const quizGroup2 = document.getElementById('quizGroup2');
+        const nextTabBtn = document.getElementById('nextTabBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitMsg = document.getElementById('submitMsg');
 
-        tab1Btn.addEventListener('click', () => {
+        function switchToTab1() {
+            // 상단 탭 스타일 및 좌측 캔버스 전환
             tab1Btn.classList.add('active');
             tab2Btn.classList.remove('active');
             tab1Content.classList.remove('hidden');
             tab2Content.classList.add('hidden');
-            resizeCanvas1(); // 탭 전환 시 캔버스 크기 재조정
-        });
+            
+            // 우측 퀴즈 및 하단 버튼 전환
+            quizGroup1.classList.remove('hidden');
+            quizGroup2.classList.add('hidden');
+            nextTabBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+            
+            submitMsg.textContent = ""; // 전환 시 메시지 초기화
+            resizeCanvas1();
+        }
 
-        tab2Btn.addEventListener('click', () => {
+        function switchToTab2() {
+            // 상단 탭 스타일 및 좌측 캔버스 전환
             tab2Btn.classList.add('active');
             tab1Btn.classList.remove('active');
             tab2Content.classList.remove('hidden');
             tab1Content.classList.add('hidden');
-            resizeCanvas2(); // 탭 전환 시 캔버스 크기 재조정
-        });
+            
+            // 우측 퀴즈 및 하단 버튼 전환
+            quizGroup2.classList.remove('hidden');
+            quizGroup1.classList.add('hidden');
+            nextTabBtn.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+            
+            submitMsg.textContent = ""; // 전환 시 메시지 초기화
+            resizeCanvas2();
+        }
 
-        /* ---------------- [1단계] 관찰 탭 (원래의 큰 진폭 물리 엔진) ---------------- */
+        tab1Btn.addEventListener('click', switchToTab1);
+        tab2Btn.addEventListener('click', switchToTab2);
+        nextTabBtn.addEventListener('click', switchToTab2);
+
+        /* ---------------- [1단계] 관찰 탭 물리 엔진 ---------------- */
         const canvas1 = document.getElementById('simulationCanvas');
         const ctx1 = canvas1.getContext('2d');
         const wrapper1 = document.getElementById('canvasWrapper1');
@@ -224,7 +258,6 @@
         let waterHeights = new Array(numPoints).fill(0);
         let waterVelocities = new Array(numPoints).fill(0);
         
-        // 원본 물리값 복구 (크고 오래가는 파동)
         const tension = 0.005;      
         const dampening = 0.0005;   
         const spread = 0.35;        
@@ -295,11 +328,9 @@
             ctx1.clearRect(0, 0, w1, h1);
             ctx1.fillStyle = '#f8fafc'; ctx1.fillRect(0, 0, w1, h1);
             
-            // 수조 테두리
             ctx1.strokeStyle = '#94a3b8'; ctx1.lineWidth = 6;
             ctx1.strokeRect(10, 10, w1-20, h1-20);
 
-            // 물
             ctx1.beginPath();
             ctx1.moveTo(10, h1 - 10); 
             for (let i = 0; i < numPoints; i++) {
@@ -320,12 +351,10 @@
             }
             ctx1.strokeStyle = '#0369a1'; ctx1.lineWidth = 5; ctx1.stroke();
 
-            // 막대
             const stickX = 10 + (stick.gridX / (numPoints - 1)) * (w1 - 20);
             ctx1.fillStyle = '#b45309'; 
             ctx1.fillRect(stickX - stick.width/2, baseWaterLevel + stick.currentY, stick.width, stick.height);
             
-            // 탁구공
             const ballRealX = 10 + (ball.gridX / (numPoints - 1)) * (w1 - 20);
             ctx1.beginPath();
             ctx1.arc(ballRealX, ball.visualY - ball.radius * 0.8, ball.radius, 0, Math.PI * 2);
@@ -346,7 +375,7 @@
             stick.isHitting = false; stick.currentY = stick.baseY;
         });
 
-        /* ---------------- [2단계] 입자 분석 탭 (순수 횡파 모델) ---------------- */
+        /* ---------------- [2단계] 입자 분석 탭 물리 엔진 ---------------- */
         const canvas2 = document.getElementById('particleCanvas');
         const ctx2 = canvas2.getContext('2d');
         const wrapper2 = document.getElementById('canvasWrapper2');
@@ -367,7 +396,7 @@
         function draw2() {
             if(tab2Content.classList.contains('hidden')) return;
             ctx2.clearRect(0, 0, w2, h2);
-            time2 += 0.04; // 파동 진행 속도
+            time2 += 0.04; 
 
             const amplitude = w2 * 0.04;
             const wavelength = w2 * 0.35;
@@ -377,23 +406,18 @@
             
             const rows = Math.floor(h2 / dotSpacing);
             const cols = Math.floor(w2 / dotSpacing) + 2;
-            const startY = h2 * 0.25; // 수면 시작 높이
+            const startY = h2 * 0.25; 
 
-            // 상단 진행방향 화살표
-            ctx2.fillStyle = '#ef4444'; // 빨간색
+            ctx2.fillStyle = '#ef4444'; 
             ctx2.font = "bold 20px Noto Sans KR";
             ctx2.textAlign = 'center';
             ctx2.fillText("파동의 진행 방향 ➔", w2/2, 40);
 
-            // 입자 그리기 (x는 고정, y만 진동)
             for(let r = 0; r < rows; r++) {
-                // 깊어질수록 진폭 감소 (표면파 특징)
                 let currentAmp = amplitude * Math.exp(-r * 0.15); 
-                
                 for(let c = 0; c < cols; c++) {
                     let x = c * dotSpacing;
                     let baseY = startY + r * dotSpacing;
-                    // 순수 횡파(상하 진동) 계산
                     let y = baseY + currentAmp * Math.sin(k * x - omega * time2);
 
                     ctx2.beginPath();
@@ -401,7 +425,6 @@
                     ctx2.fillStyle = '#3b82f6';
                     ctx2.fill();
 
-                    // 수면(r=0) 중앙 근처에 오리 띄우기
                     if(r === 0 && c === Math.floor(cols/2)) {
                         ctx2.font = `${dotSpacing*1.5}px Arial`;
                         ctx2.fillText("🦆", x, y - dotSpacing*0.5);
@@ -410,7 +433,6 @@
             }
         }
 
-        // 메인 애니메이션 루프
         function animate() {
             updatePhysics1();
             draw1();
@@ -422,16 +444,13 @@
         /* ---------------- 퀴즈 및 제출 로직 ---------------- */
         const answers = { q2: null, q3: null, q4: null, q5: null };
         
-        // 객관식 버튼 클릭 처리 함수
         function handleQuizClick(groupClass, key) {
             document.querySelectorAll(`.${groupClass}`).forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // 동일 그룹 버튼 스타일 초기화
                     document.querySelectorAll(`.${groupClass}`).forEach(b => {
                         b.classList.remove('bg-blue-50', 'border-blue-400', 'text-blue-800', 'font-bold');
                         b.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
                     });
-                    // 선택된 버튼 강조
                     this.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
                     this.classList.add('bg-blue-50', 'border-blue-400', 'text-blue-800', 'font-bold');
                     
@@ -445,9 +464,6 @@
         handleQuizClick('q4-btn', 'q4');
         handleQuizClick('q5-btn', 'q5');
 
-        const submitBtn = document.getElementById('submitBtn');
-        const submitMsg = document.getElementById('submitMsg');
-
         submitBtn.addEventListener('click', async () => {
             const studentId = document.getElementById('studentId').value.trim();
             const studentName = document.getElementById('studentName').value.trim();
@@ -455,24 +471,23 @@
 
             if (!studentId || !studentName) {
                 submitMsg.textContent = "⚠️ 학번과 이름을 모두 입력해주세요.";
-                submitMsg.className = "text-sm text-center mt-2 text-red-500 font-bold block";
+                submitMsg.className = "text-sm text-center mt-3 text-red-500 font-bold block";
                 return;
             }
 
+            // 모든 문항 확인 예외 처리 (1단계 문항 누락 검사 포함)
             if (!q1Answer || answers.q2 === null || answers.q3 === null || answers.q4 === null || answers.q5 === null) {
-                submitMsg.textContent = "⚠️ 1~5번 문제의 답을 모두 작성 및 선택해주세요.";
-                submitMsg.className = "text-sm text-center mt-2 text-red-500 font-bold block";
+                submitMsg.textContent = "⚠️ 1~5번 문제의 답을 모두 작성 및 선택해주세요. (1단계 탭의 문제도 확인하세요!)";
+                submitMsg.className = "text-sm text-center mt-3 text-red-500 font-bold block";
                 return;
             }
 
-            // 제출 중 상태 변경
             submitBtn.disabled = true;
             submitBtn.innerHTML = "제출 중... <svg class='animate-spin h-4 w-4 ml-2' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4' fill='none'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg>";
             
             const q1Correct = (q1Answer.includes('물') || q1Answer.includes('물질'));
 
             try {
-                // Apps Script로 데이터 전송 (FormData 활용)
                 const formData = new URLSearchParams();
                 formData.append('studentId', studentId);
                 formData.append('studentName', studentName);
@@ -482,9 +497,8 @@
                 formData.append('q4Result', answers.q4 ? '정답' : '오답');
                 formData.append('q5Result', answers.q5 ? '정답' : '오답');
 
-                // SCRIPT_URL이 기본값 그대로라면 에러 처리(테스트용 성공 처리)로 넘어감
                 if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbwlIbglE36GKS8-xCPiGIhrVzLU9uZu6G71mDFsNJMNLUQMuCAZ2KVbDVUNx5ZTErc/exec') {
-                    throw new Error("URL이 입력되지 않았습니다.");
+                    throw new Error("URL_NOT_SET");
                 }
 
                 const response = await fetch(SCRIPT_URL, {
@@ -494,18 +508,23 @@
 
                 if (response.ok) {
                     submitMsg.textContent = "✅ 선생님께 성공적으로 제출되었습니다!";
-                    submitMsg.className = "text-sm text-center mt-2 text-green-600 font-bold block";
+                    submitMsg.className = "text-sm text-center mt-3 text-green-600 font-bold block";
                     submitBtn.innerHTML = "제출 완료";
                 } else {
-                    throw new Error('Network response was not ok');
+                    throw new Error('NETWORK_ERROR');
                 }
             } catch (error) {
-                // Apps Script 주소를 아직 넣지 않았을 때 뜨는 임시 성공 메시지
-                console.warn("전송 테스트 모드 (실제 URL 연동 필요): ", error.message);
-                submitMsg.textContent = "✅ (테스트 완료) 데이터를 수집하려면 실제 SCRIPT_URL을 입력하세요.";
-                submitMsg.className = "text-sm text-center mt-2 text-indigo-600 font-bold block";
-                submitBtn.innerHTML = "제출 완료 (테스트)";
-                submitBtn.disabled = false;
+                if(error.message === "URL_NOT_SET") {
+                    submitMsg.textContent = "✅ (테스트 완료) 데이터를 수집하려면 실제 SCRIPT_URL을 입력하세요.";
+                    submitMsg.className = "text-sm text-center mt-3 text-indigo-600 font-bold block";
+                    submitBtn.innerHTML = "제출 완료 (테스트)";
+                    submitBtn.disabled = false;
+                } else {
+                    submitMsg.textContent = "⚠️ 제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+                    submitMsg.className = "text-sm text-center mt-3 text-red-500 font-bold block";
+                    submitBtn.innerHTML = "선생님께 결과 제출하기 ✔";
+                    submitBtn.disabled = false;
+                }
             }
         });
     </script>
