@@ -119,11 +119,6 @@
             <section class="w-full lg:w-1/3 p-6 md:p-8 flex flex-col">
                 <div class="inline-block px-3 py-1 bg-pink-100 text-pink-600 text-sm font-bold rounded-full mb-4 w-fit">해보기</div>
                 <h3 class="text-2xl font-extrabold text-gray-800 mb-6">관찰 결과 정리</h3>
-                
-                <!-- 스프레드시트 URL 입력란 -->
-                <div class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <input type="url" id="sheetUrl" placeholder="https://script.google.com/macros/s/AKfycbwlIbglE36GKS8-xCPiGIhrVzLU9uZu6G71mDFsNJMNLUQMuCAZ2KVbDVUNx5ZTErc/exec" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
 
                 <!-- 학번 이름 입력란 -->
                 <div class="flex gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
@@ -160,7 +155,7 @@
                 
                 <div class="mt-auto border-t border-gray-200 pt-4">
                     <button id="submitBtn1" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
-                        결과 제출하기
+                        2단계로 이동하기
                     </button>
                     <p id="submitMsg1" class="text-sm text-center mt-3 font-bold hidden"></p>
                 </div>
@@ -229,7 +224,7 @@
 
                 <div class="mt-auto border-t border-gray-200 pt-4">
                     <button id="submitBtn2" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
-                        결과 확인하기
+                        최종 결과 제출하기
                     </button>
                     <p id="submitMsg2" class="text-sm text-center mt-3 font-bold hidden"></p>
                 </div>
@@ -247,6 +242,12 @@
     </div>
 
     <script>
+        // === 선생님 설정 영역 ===
+        // 구글 앱스 스크립트(Google Apps Script) 웹앱 URL을 아래 따옴표 안에 입력하세요.
+        // 예시: const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfyc.../exec";
+        const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfycbwlIbglE36GKS8-xCPiGIhrVzLU9uZu6G71mDFsNJMNLUQMuCAZ2KVbDVUNx5ZTErc/exec";
+        // ========================
+
         const btnTab1 = document.getElementById('btnTab1');
         const btnTab2 = document.getElementById('btnTab2');
         const contentTab1 = document.getElementById('contentTab1');
@@ -551,21 +552,17 @@
                 msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
                 return;
             }
-
-            const isQ1Correct = q1Text.includes('물') || q1Text.includes('물질');
             
-            if (isQ1Correct && ansQ2 && ansQ3) {
-                showMessage("🎉 1단계 모두 정답입니다!", "훌륭합니다! 파동이 진행할 때 매질(물 입자)과 탁구공은 파동을 따라 이동하지 않고 제자리에서 위아래로 진동만 한다는 사실을 정확히 이해하셨네요.\n\n상단의 [🔬 2단계: 분석하기] 탭으로 이동하여 입자 모형과 심화 문제를 풀어보세요!", true);
-                msgEl.textContent = "✅ 제출 완료 및 정답 처리되었습니다.";
-                msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
-                
-                btnTab2.classList.add('animate-pulse', 'border-blue-500', 'bg-blue-100');
-                setTimeout(() => btnTab2.classList.remove('animate-pulse', 'bg-blue-100'), 3000);
-            } else {
-                showMessage("🤔 다시 한번 생각해보세요", "틀린 문제가 있습니다.\n\n[힌트]\n- 물결을 전달해주는 것은 무엇일까요?\n- 탁구공은 옆으로 떠내려갔나요, 아니면 위아래로 출렁이기만 했나요?", false);
-                msgEl.textContent = "❌ 틀린 문제가 있습니다. 다시 시도해주세요.";
-                msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
-            }
+            // 정답 여부와 상관없이 무조건 2단계로 통과
+            showMessage("1단계 완료!", "관찰 결과를 작성했습니다.\n\n[🔬 2단계: 분석하기] 탭으로 이동하여 분석을 마무리해주세요.", true);
+            msgEl.textContent = "✅ 입력 완료. 2단계로 이동하세요.";
+            msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
+            
+            btnTab2.classList.add('animate-pulse', 'border-blue-500', 'bg-blue-100');
+            setTimeout(() => {
+                btnTab2.classList.remove('animate-pulse', 'bg-blue-100');
+                switchTab(2); // 2단계 탭으로 자동 전환
+            }, 1500);
         });
 
 
@@ -755,21 +752,60 @@
             msgEl.classList.remove('hidden');
 
             if (ansQ4 === null || ansQ5 === null) {
-                msgEl.textContent = "⚠️ 모든 문제의 답을 선택해주세요.";
+                msgEl.textContent = "⚠️ 4번, 5번 문제의 답을 선택해주세요.";
                 msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
                 return;
             }
 
-            if (ansQ4 && ansQ5) {
-                document.getElementById('explanationBox').classList.remove('hidden');
-                showMessage("🎉 완벽하게 이해하셨네요!", "정답입니다!\n파동이 진행할 때 매질(물)은 제자리에서 진동만 하고, 실제로 전달되는 것은 '에너지(진동)'입니다.", true);
-                msgEl.textContent = "✅ 제출 완료 및 정답 처리되었습니다.";
-                msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
-            } else {
-                showMessage("🤔 다시 확인해보세요!", "[힌트]\n- 2단계 시뮬레이션에서 노란색 오리가 오른쪽으로 떠내려가나요?\n- 화살표 방향(파동)으로 진행하는 것은 물 입자일까요, 진동하는 에너지일까요?", false);
-                msgEl.textContent = "❌ 틀린 문제가 있습니다. 다시 시도해주세요.";
+            // 1단계 입력값 가져오기
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            const q1Text = document.getElementById('q1Input').value.trim();
+
+            if (!id || !name || !q1Text || ansQ2 === null || ansQ3 === null) {
+                msgEl.textContent = "⚠️ 1단계 입력 정보가 누락되었습니다. 1단계로 돌아가서 모두 입력해주세요.";
                 msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
+                return;
             }
+
+            // 정답 여부 무관하게 핵심 정리 박스 표시
+            document.getElementById('explanationBox').classList.remove('hidden');
+            msgEl.textContent = "⏳ 결과를 제출 중입니다...";
+            msgEl.className = "text-sm text-center mt-3 text-blue-600 font-bold block fade-in";
+
+            // 스프레드시트로 보낼 폼 데이터 준비
+            const formData = new URLSearchParams();
+            formData.append('studentId', id);
+            formData.append('studentName', name);
+            formData.append('q1', q1Text);
+            formData.append('q2', ansQ2 ? "위아래 진동" : "옆으로 이동");
+            formData.append('q3', ansQ3 ? "위아래 진동" : "옆으로 이동");
+            formData.append('q4', ansQ4 ? "제자리 진동" : "진행 방향 이동");
+            formData.append('q5', ansQ5 ? "진동(파동) 퍼져나감" : "물 입자 퍼져나감");
+
+            // URL이 기본값인 경우 실제 전송 안함 (테스트 모드)
+            if (SPREADSHEET_URL === "여기에_구글_앱스_스크립트_웹앱_URL을_입력하세요") {
+                showMessage("제출 완료 (테스트)", "모든 문제 풀이가 완료되었습니다!\n\n(현재 코드에 선생님의 스프레드시트 URL이 설정되지 않아 실제 데이터 전송은 생략되었습니다.)", true);
+                msgEl.textContent = "✅ 최종 결과 제출이 완료되었습니다.";
+                msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
+                return;
+            }
+
+            // 실제 스프레드시트로 전송 (CORS 에러 방지를 위해 no-cors 사용)
+            fetch(SPREADSHEET_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            }).then(() => {
+                showMessage("🎉 최종 제출 완료!", "수고하셨습니다. 작성한 모든 결과가 선생님께 정상적으로 제출되었습니다.", true);
+                msgEl.textContent = "✅ 제출이 완료되었습니다.";
+                msgEl.className = "text-sm text-center mt-3 text-green-600 font-bold block fade-in";
+            }).catch((error) => {
+                console.error('Error:', error);
+                showMessage("제출 오류", "데이터 제출 중 문제가 발생했습니다. 선생님께 문의해주세요.", false);
+                msgEl.textContent = "❌ 제출에 실패했습니다.";
+                msgEl.className = "text-sm text-center mt-3 text-red-500 font-bold block fade-in";
+            });
         });
 
         function animateLoop() {
