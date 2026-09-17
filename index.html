@@ -847,12 +847,12 @@
             formData.append('studentId', id);
             formData.append('studentName', name);
             
-            // Apps Script에서 소문자(q1)와 대문자(Q1) 중 어느 것을 파라미터로 받을지 몰라 둘 다 전송하여 "미제출" 오류 방지
-            formData.append('q1', ans1Str); formData.append('Q1', ans1Str);
-            formData.append('q2', ans2Str); formData.append('Q2', ans2Str);
-            formData.append('q3', ans3Str); formData.append('Q3', ans3Str);
-            formData.append('q4', ans4Str); formData.append('Q4', ans4Str);
-            formData.append('q5', ans5Str); formData.append('Q5', ans5Str);
+            /* 백엔드(Apps Script)에서 설정한 변수명(q1Result ~ q5Result)과 동일하게 맞춰서 전송합니다. */
+            formData.append('q1Result', ans1Str);
+            formData.append('q2Result', ans2Str);
+            formData.append('q3Result', ans3Str);
+            formData.append('q4Result', ans4Str);
+            formData.append('q5Result', ans5Str);
 
             // SPREADSHEET_URL 변수 확인 (상단에 정의되어 있어야 함)
             if (typeof SPREADSHEET_URL === 'undefined' || SPREADSHEET_URL === "여기에_구글_앱스_스크립트_웹앱_URL을_입력하세요") {
